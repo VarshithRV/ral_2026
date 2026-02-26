@@ -1,0 +1,88 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-b0f2069fe95299282573.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "ral_2026",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "human_to_robot_handover::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-human_to_robot_handover-Debug-9df146fb62c5e47cf4cc.json",
+					"name" : "human_to_robot_handover",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "human_to_robot_handover_v2::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-human_to_robot_handover_v2-Debug-d92201a3de24ff2f5a61.json",
+					"name" : "human_to_robot_handover_v2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ral_2026_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ral_2026_uninstall-Debug-03844df51f9d7e122cf4.json",
+					"name" : "ral_2026_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-29a72dbd62f58ed07bc5.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/barracuda/colcon_ws/src/ral_2026/build",
+		"source" : "/home/barracuda/colcon_ws/src/ral_2026"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

@@ -1,0 +1,4 @@
+source;share/ral_2026/local_setup.bash
+source;share/ral_2026/local_setup.dsv
+source;share/ral_2026/local_setup.sh
+source;share/ral_2026/local_setup.zsh
