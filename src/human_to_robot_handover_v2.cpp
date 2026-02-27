@@ -84,7 +84,7 @@ class HumanRobotHandover{
         HumanRobotHandover():threshold_height_(THRESHOLD_HEIGHT){
             
             // node declaration
-            node_ = std::make_shared<rclcpp::Node>("pose_tracker");
+            node_ = std::make_shared<rclcpp::Node>("human_to_robot_handover");
             
             // lift sensor shit
             baud_flag_ = baudFromInt(serial_baud_);
@@ -115,6 +115,18 @@ class HumanRobotHandover{
             
             moveit_node_ = std::make_shared<rclcpp::Node>(moveit_node_name, node_options);
             move_group_interface_ = std::make_shared<MoveGroupInterface>(moveit_node_, planning_group_);
+            move_group_interface_->setEndEffectorLink("left_tool0");
+            move_group_interface_->setPlanningTime(10.0);
+            move_group_interface_->setNumPlanningAttempts(15);
+            move_group_interface_->setMaxVelocityScalingFactor(0.1);
+            move_group_interface_->setMaxAccelerationScalingFactor(0.1);
+            move_group_interface_->setPlannerId("RRTConnectkConfigDefault");
+            move_group_interface_->startStateMonitor();
+
+            executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+            executor_->add_node(node_);
+            moveit_executor_ = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+            moveit_executor_->add_node(moveit_node_);
 
             // subscription for object pose stamped
             object_subscription_ = node_->create_subscription<geometry_msgs::msg::PoseStamped>("/apriltag_grid_detector/object0_filtered_pose",10,
@@ -197,11 +209,13 @@ class HumanRobotHandover{
             if(!set_io_client_->wait_for_service(3s))
                 RCLCPP_ERROR(node_->get_logger(),"Stop servo service is not connected!");
 
+            // 50 Hz timer
+            serial_timer_ = node_->create_wall_timer(std::chrono::milliseconds(20),[this](){pollSerial();});
 
             // handover server
             handover_server_ = node_->create_service<std_srvs::srv::Trigger>("~/handover",
                 [this](const std_srvs::srv::Trigger_Request::SharedPtr req, std_srvs::srv::Trigger_Response::SharedPtr res){
-                    if(target_grasping_pose_ == nullptr){
+                    if(!object_seen_){
                         RCLCPP_INFO(node_->get_logger(),"Object pose not recieved yet");
                         return;
                     }
@@ -217,16 +231,19 @@ class HumanRobotHandover{
                     res->success = success;
                 }
             );
+
+            thread_ = std::thread([this](){moveit_executor_->spin();});
+            executor_->spin();
         }
 
         // WERE HERE NOW
         bool handover(){
             // preaction before starting
             RCLCPP_INFO(node_->get_logger(),"Calling left preaction");
-            if(!call_trigger_client(left_preaction_client_,"left_preaction_client"));
+            if(!call_trigger_client(left_preaction_client_,"left_preaction_client"))
                 return false;
             RCLCPP_INFO(node_->get_logger(),"Calling right preaction");
-            if(!call_trigger_client(right_preaction_client_,"left_preaction_client"));
+            if(!call_trigger_client(right_preaction_client_,"left_preaction_client"))
                 return false;
             // switching controllers
             RCLCPP_INFO(node_->get_logger(),"Switching to servo type controller");
@@ -353,6 +370,7 @@ class HumanRobotHandover{
                 RCLCPP_ERROR(node_->get_logger(), "Service %s responded with failure: %s",name.c_str(), response->message.c_str());
                 return false;
             }
+
             RCLCPP_INFO(node_->get_logger(), "Service %s succeeded: %s",name.c_str(), response->message.c_str());
             return true;
         }
@@ -469,6 +487,10 @@ class HumanRobotHandover{
             }
         }
 
+        std::thread thread_;
+        rclcpp::executors::SingleThreadedExecutor::SharedPtr moveit_executor_;
+        rclcpp::executors::MultiThreadedExecutor::SharedPtr executor_;
+
         // data
         rclcpp::Node::SharedPtr node_;
         rclcpp::Node::SharedPtr moveit_node_;
@@ -516,6 +538,9 @@ class HumanRobotHandover{
         
         // services
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr handover_server_;
+
+        // timer
+        rclcpp::TimerBase::SharedPtr serial_timer_;
         
         // this looks odd without a comment, so i commented it
         rclcpp::CallbackGroup::SharedPtr callback_group_;
