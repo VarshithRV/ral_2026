@@ -64,6 +64,7 @@ workflow :
 #include "moveit_msgs/msg/robot_trajectory.hpp"
 #include "rmw/qos_profiles.h"
 #include "geometry_msgs/msg/wrench_stamped.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 #include "controller_manager_msgs/srv/switch_controller.hpp"
 #include "std_srvs/srv/trigger.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -106,6 +107,7 @@ class HumanRobotHandover{
             // publishers
             grasp_pose_publisher_=node_->create_publisher<geometry_msgs::msg::PoseStamped>("~/grasp_pose",10);
             sensor_value_publisher_=node_->create_publisher<std_msgs::msg::Int32>("~/sensor_value",10);
+            left_servo_node_main_delta_twist_cmds_publisher_=node_->create_publisher<geometry_msgs::msg::TwistStamped>("/left_servo_node_main/delta_twist_cmds",10);
 
             // move group interface setup
             rclcpp::NodeOptions node_options;
@@ -215,15 +217,15 @@ class HumanRobotHandover{
             // handover server
             handover_server_ = node_->create_service<std_srvs::srv::Trigger>("~/handover",
                 [this](const std_srvs::srv::Trigger_Request::SharedPtr req, std_srvs::srv::Trigger_Response::SharedPtr res){
-                    if(!object_seen_){
-                        RCLCPP_INFO(node_->get_logger(),"Object pose not recieved yet");
-                        return;
-                    }
-                    if(sensor_reading<SENSOR_READING_THRESHOLD){
-                        RCLCPP_INFO(node_->get_logger(),"Nothing detected on the sensor, place something to begin");
-                        return;
-                    }
-                    RCLCPP_INFO(node_->get_logger(),"Object pose received and object detected on the sensor, sensor value : %i",sensor_reading);
+                    // if(!object_seen_){
+                    //     RCLCPP_INFO(node_->get_logger(),"Object pose not recieved yet");
+                    //     return;
+                    // }
+                    // if(sensor_reading<SENSOR_READING_THRESHOLD){
+                    //     RCLCPP_INFO(node_->get_logger(),"Nothing detected on the sensor, place something to begin");
+                    //     return;
+                    // }
+                    // RCLCPP_INFO(node_->get_logger(),"Object pose received and object detected on the sensor, sensor value : %i",sensor_reading);
                     RCLCPP_INFO(node_->get_logger(),"Starting the handover routine");
                     auto success = handover();
                     std::string s2 = success ? "true" : "false";
@@ -238,29 +240,57 @@ class HumanRobotHandover{
 
         // WERE HERE NOW
         bool handover(){
-            // preaction before starting
             RCLCPP_INFO(node_->get_logger(),"Calling left preaction");
             if(!call_trigger_client(left_preaction_client_,"left_preaction_client"))
                 return false;
-            RCLCPP_INFO(node_->get_logger(),"Calling right preaction");
+            
+                RCLCPP_INFO(node_->get_logger(),"Calling right preaction");
             if(!call_trigger_client(right_preaction_client_,"left_preaction_client"))
                 return false;
-            // switching controllers
+            
+            RCLCPP_INFO(node_->get_logger(),"Preparing to servo");
+            if(!prepare_servo()){
+                RCLCPP_ERROR(node_->get_logger(),"Error preparing to start servo");
+                return false;
+            }
+            RCLCPP_INFO(node_->get_logger(),"Preparation complete");
+            
+            // SERVO SHIT HERE, change this with a better logic
+            auto rate = rclcpp::Rate(50ms);
+            auto twist_cmd = std::make_shared<geometry_msgs::msg::TwistStamped>();
+            twist_cmd->header.frame_id="world";
+            twist_cmd->header.stamp=node_->get_clock()->now();
+            twist_cmd->twist.linear.x=0.0;
+            twist_cmd->twist.linear.y=0.0;
+            twist_cmd->twist.linear.z=0.01 ;
+            twist_cmd->twist.angular.x=0.0;
+            twist_cmd->twist.angular.y=0.0;
+            twist_cmd->twist.angular.z=0.0;
+            int i = 0;
+            while(rclcpp::ok()){
+                twist_cmd->header.stamp=node_->get_clock()->now();
+                left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
+                rate.sleep();
+                if(i++>=200)
+                    break;
+            }
+            // TILL HERE
+
             RCLCPP_INFO(node_->get_logger(),"Switching to servo type controller");
-            if(!switch_controller())
+            if(!unprepare_servo()){
+                RCLCPP_ERROR(node_->get_logger(),"Error unpreparing to stop servo");
+                return false;
+            }
+
+            RCLCPP_INFO(node_->get_logger(),"Calling left preaction");
+            if(!call_trigger_client(left_preaction_client_,"left_preaction_client"))
                 return false;
             
-            std::this_thread::sleep_for(2s);
-            gripper_on();
-            std::this_thread::sleep_for(2s);
-            gripper_off();
-            std::this_thread::sleep_for(2s);
-
-            RCLCPP_INFO(node_->get_logger(),"Switching to servo type controller");
-            if(!switch_back_controller())
+                RCLCPP_INFO(node_->get_logger(),"Calling right preaction");
+            if(!call_trigger_client(right_preaction_client_,"left_preaction_client"))
                 return false;
-            return true;
 
+            return true;
         }
 
         void gripper_on()
@@ -303,7 +333,7 @@ class HumanRobotHandover{
             }
         }
     
-        bool switch_controller(){
+        bool prepare_servo(){
             RCLCPP_INFO(node_->get_logger(),"Switching controller");
             auto request = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
             request->activate_controllers = std::vector<std::string>{servo_controller_};
@@ -319,16 +349,47 @@ class HumanRobotHandover{
                 auto resp = future.get();
                 if (resp->ok){
                     RCLCPP_INFO(node_->get_logger(),"Service successful");
+                }
+                else{
+                    RCLCPP_ERROR(node_->get_logger(),"Service couldn't switch controller");
+                    return false;
+                }
+            }
+
+            auto start_servo_future = start_servo_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger_Request>());
+            if(start_servo_future.wait_for(10s)!=std::future_status::ready){
+                RCLCPP_ERROR(node_->get_logger(),"Start servo service call timed out");
+            }
+            else{
+                auto resp = start_servo_future.get();
+                if(resp->success){
+                    RCLCPP_INFO(node_->get_logger(),"Service successful");
                     return true;
                 }
                 else{
-                    RCLCPP_ERROR(node_->get_logger(),"Service couldn't swith controller");
+                    RCLCPP_ERROR(node_->get_logger(),"Couldn't switch controller");
                     return false;
                 }
             }
         }
 
-        bool switch_back_controller(){
+        bool unprepare_servo(){
+            auto stop_servo_future = stop_servo_client_->async_send_request(std::make_shared<std_srvs::srv::Trigger_Request>());
+            if(stop_servo_future.wait_for(10s)!=std::future_status::ready){
+                RCLCPP_ERROR(node_->get_logger(),"stop_servo service timed out");
+                return false;
+            }
+            else{
+                auto stop_servo_res = stop_servo_future.get();
+                if(!stop_servo_res->success){
+                    RCLCPP_ERROR(node_->get_logger(),"stop_servo service unsuccessful");
+                    return false;
+                }
+                else{
+                    RCLCPP_INFO(node_->get_logger(),"stop_servo service successful");
+                }
+            }
+
             RCLCPP_INFO(node_->get_logger(),"Switching back controller");
             auto request = std::make_shared<controller_manager_msgs::srv::SwitchController::Request>();
             request->activate_controllers = std::vector<std::string>{non_servo_controller_};
@@ -535,6 +596,7 @@ class HumanRobotHandover{
         // publishers
         rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr grasp_pose_publisher_;
         rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr sensor_value_publisher_;
+        rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr left_servo_node_main_delta_twist_cmds_publisher_;
         
         // services
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr handover_server_;

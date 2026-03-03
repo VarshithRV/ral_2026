@@ -162,36 +162,6 @@ def launch_setup(context, *args, **kwargs):
 
     #### nodes
 
-    left_pose_tracking_node = Node(
-        package="motion_planning_abstractions",
-        executable="pose_tracker",
-        name="left_pose_tracker",
-        output="screen",
-        parameters=[
-            robot_description,
-            robot_description_semantic,
-            robot_description_kinematics,
-            {"use_sim_time": use_sim_time},
-            {
-                "planning_group": "left_ur16e",
-                "endeffector_link": "left_tool0",
-                "servo_controller": "left_forward_velocity_controller",
-                "non_servo_controller": "left_scaled_joint_trajectory_controller",
-                "servo_node_namespace": "left_servo_node_main",
-                "P_GAIN": 1.0,
-                "I_GAIN": 0.0,
-                "D_GAIN": 0.0,
-                "K_GAIN": 1.0,
-                "terminate":False, # should the tracking terminate?
-                "linear_stop_threshold": 0.01, #m
-                "angular_stop_threshold": 0.01, #rad
-                "planning_frame":"world",
-                "linear_iir_alpha":0.85, # range [0.0,1.0], more implies filter more # recommended amount is 85%
-                "angular_iir_alpha":0.0, # range [0.0,1.0], more implies filter more
-            },
-        ]
-    )
-
     left_preaction_server = Node(
         package="motion_planning_abstractions",
         executable="predefined_state_server",
@@ -263,7 +233,6 @@ def launch_setup(context, *args, **kwargs):
     )
 
     nodes_to_start = [
-        left_pose_tracking_node,
         left_preaction_server,
         right_preaction_server,
         apriltag_grid_detector,
