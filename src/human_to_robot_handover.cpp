@@ -503,7 +503,7 @@ class HumanRobotHandover{
 
         // hardcoded shit
         double threshold_height_ = THRESHOLD_HEIGHT;
-        Eigen::Vector3d object_to_grasp_linear_transform_{0.04, 0.04, -0.015};
+        Eigen::Vector3d object_to_grasp_linear_transform_{0.03, -0.015, -0.0375};
         Eigen::Vector3d object_to_grasp_euler_transform_{0.0, -M_PI/2, 0.0};
         float latest_object_z_=0;
         bool object_seen_=false;
