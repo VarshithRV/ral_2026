@@ -247,8 +247,8 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             {
                 "alpha": 0.25,
-                "marker_separation": 4.0,  # mm
-                "marker_size": 40.0,        # mm
+                "marker_separation": 4.7,  # mm
+                "marker_size": 27.84,        # mm
                 "object.name": "object0",
                 # 2 rows x 2 cols, flattened [row0, row1, ...]
                 "grid.rows": 2,
