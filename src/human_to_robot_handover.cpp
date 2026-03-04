@@ -275,10 +275,17 @@ class HumanRobotHandover{
             return true;
         }
 
+        // need to estimate current velocity and acceleration at a high frequency
+
+
         // SERVO SHIT HERE
         bool grasp(){
             // approach till via point, grasp, then move back
-
+            // Phases : 
+            // reach : current to via point
+            // grasp : via point to the object
+            // pullback : object to via point
+ 
             Eigen::Vector3d grasp_position(current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z);
             Eigen::Quaterniond grasp_orientation;
             grasp_orientation.w() = current_setpoint_pose_->orientation.w;
@@ -295,13 +302,107 @@ class HumanRobotHandover{
             current_orientation.y() = current_pose.pose.orientation.y;
             current_orientation.z() = current_pose.pose.orientation.z;
             current_orientation.normalize();
+
+            // get the via point, in -0.1m in z direction
+            auto via_point=grasp_position + grasp_orientation*(Eigen::Vector3d(0,0,-0.1));
             
             auto rate = rclcpp::Rate(50ms);
             auto twist_cmd = std::make_shared<geometry_msgs::msg::TwistStamped>();
             twist_cmd->header.frame_id="world";
             
-            int i = 0;
-            while(rclcpp::ok()){
+            double reach_duration=1.2;
+            double grasp_duration=0.5;
+            double pullback_duration=0.5;
+            double start_time = node_->get_clock()->now().seconds();
+            double current_time = start_time;
+            double time_elapsed = 0.0;
+            
+            Eigen::Matrix3d initial_conditions;
+            initial_conditions.col(0) << current_position.x(), 0.0, 0.0;
+            initial_conditions.col(1) << current_position.y(), 0.0, 0.0;
+            initial_conditions.col(2) << current_position.z(), 0.0, 0.0;
+
+            Eigen::Matrix3d grasp_conditions;
+            grasp_conditions.col(0) << grasp_position.x(), 0.0, 0.0;
+            grasp_conditions.col(1) << grasp_position.y(), 0.0, 0.0;
+            grasp_conditions.col(2) << grasp_position.z(), 0.0, 0.0;
+
+            Eigen::Vector3d via_velocity = grasp_orientation.toRotationMatrix().col(2) * 0.1;
+
+            Eigen::Matrix3d via_point_conditions;
+            via_point_conditions.col(0) << via_point.x(), via_velocity.x(), 0.0;
+            via_point_conditions.col(1) << via_point.y(), via_velocity.y(), 0.0;
+            via_point_conditions.col(2) << via_point.z(), via_velocity.z(), 0.0;
+
+            Eigen::Matrix3d pullback_conditions;
+            pullback_conditions.col(0) << via_point.x(), 0.0, 0.0;
+            pullback_conditions.col(1) << via_point.y(), 0.0, 0.0;
+            pullback_conditions.col(2) << via_point.z(), 0.0, 0.0;
+            
+            // reach
+            Eigen::Vector<double,6> x_coeffs = compute_coeffs(time_elapsed,reach_duration,initial_conditions.col(0),via_point_conditions.col(0));
+            Eigen::Vector<double,6> y_coeffs = compute_coeffs(time_elapsed,reach_duration,initial_conditions.col(1),via_point_conditions.col(1));
+            Eigen::Vector<double,6> z_coeffs = compute_coeffs(time_elapsed,reach_duration,initial_conditions.col(2),via_point_conditions.col(2));
+
+            while(rclcpp::ok() && time_elapsed<reach_duration){
+                // get grasp position and orientation
+                grasp_position = {current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z};
+                grasp_orientation.w() = current_setpoint_pose_->orientation.w;
+                grasp_orientation.x() = current_setpoint_pose_->orientation.x;
+                grasp_orientation.y() = current_setpoint_pose_->orientation.y;
+                grasp_orientation.z() = current_setpoint_pose_->orientation.z;
+                grasp_orientation.normalize();
+                
+                // get current position and orientaiton
+                current_pose = move_group_interface_->getCurrentPose();
+                current_position = {current_pose.pose.position.x,current_pose.pose.position.y,current_pose.pose.position.z};
+                current_orientation.w() = current_pose.pose.orientation.w;
+                current_orientation.x() = current_pose.pose.orientation.x;
+                current_orientation.y() = current_pose.pose.orientation.y;
+                current_orientation.z() = current_pose.pose.orientation.z;
+                current_orientation.normalize();
+
+                // get the via point
+                auto via_point=grasp_position + grasp_orientation*(Eigen::Vector3d(0,0,-0.1));
+                
+                // simple pid on angular velocity
+                auto angular_velocity=compute_angular_velocity(grasp_orientation,current_orientation);
+                twist_cmd->twist.angular.x = angular_velocity[0];
+                twist_cmd->twist.angular.y = angular_velocity[1];
+                twist_cmd->twist.angular.z = angular_velocity[2];
+
+                Eigen::Matrix3d current_conditions;
+                current_conditions.col(0) << current_position.x(),compute_velocity(x_coeffs, time_elapsed),compute_acceleration(x_coeffs, time_elapsed);
+                current_conditions.col(1) << current_position.y(),compute_velocity(y_coeffs, time_elapsed),compute_acceleration(y_coeffs, time_elapsed);
+                current_conditions.col(2) << current_position.z(),compute_velocity(z_coeffs, time_elapsed),compute_acceleration(z_coeffs, time_elapsed);
+
+                // get the linear velocity here
+                x_coeffs = compute_coeffs(time_elapsed,reach_duration,current_conditions.col(0),via_point_conditions.col(0));
+                y_coeffs = compute_coeffs(time_elapsed,reach_duration,current_conditions.col(1),via_point_conditions.col(1));
+                z_coeffs = compute_coeffs(time_elapsed,reach_duration,current_conditions.col(2),via_point_conditions.col(2));
+                
+                rate.sleep();
+                
+                current_time = node_->get_clock()->now().seconds();
+                time_elapsed = current_time - start_time;
+
+                twist_cmd->twist.linear.x = compute_velocity(x_coeffs,time_elapsed);
+                twist_cmd->twist.linear.y = compute_velocity(y_coeffs,time_elapsed);
+                twist_cmd->twist.linear.z = compute_velocity(z_coeffs,time_elapsed);
+
+                twist_cmd->header.stamp=node_->get_clock()->now();
+                left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
+            }
+
+            // grasp (via point to object)
+            time_elapsed = 0.0;
+            start_time = node_->get_clock()->now().seconds();
+
+            x_coeffs = compute_coeffs(time_elapsed,grasp_duration,via_point_conditions.col(0),grasp_conditions.col(0));
+            y_coeffs = compute_coeffs(time_elapsed,grasp_duration,via_point_conditions.col(1),grasp_conditions.col(1));
+            z_coeffs = compute_coeffs(time_elapsed,grasp_duration,via_point_conditions.col(2),grasp_conditions.col(2));
+
+            while(rclcpp::ok() && time_elapsed<grasp_duration){
                 // get grasp position and orientation
                 grasp_position = {current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z};
                 grasp_orientation.w() = current_setpoint_pose_->orientation.w;
@@ -325,15 +426,108 @@ class HumanRobotHandover{
                 twist_cmd->twist.angular.y = angular_velocity[1];
                 twist_cmd->twist.angular.z = angular_velocity[2];
 
+                Eigen::Matrix3d current_conditions;
+                current_conditions.col(0) << current_position.x(),compute_velocity(x_coeffs, time_elapsed),compute_acceleration(x_coeffs, time_elapsed);
+                current_conditions.col(1) << current_position.y(),compute_velocity(y_coeffs, time_elapsed),compute_acceleration(y_coeffs, time_elapsed);
+                current_conditions.col(2) << current_position.z(),compute_velocity(z_coeffs, time_elapsed),compute_acceleration(z_coeffs, time_elapsed);
+
                 // get the linear velocity here
+                x_coeffs = compute_coeffs(time_elapsed,grasp_duration,current_conditions.col(0),grasp_conditions.col(0));
+                y_coeffs = compute_coeffs(time_elapsed,grasp_duration,current_conditions.col(1),grasp_conditions.col(1));
+                z_coeffs = compute_coeffs(time_elapsed,grasp_duration,current_conditions.col(2),grasp_conditions.col(2));
                 
+                rate.sleep();
+                
+                current_time = node_->get_clock()->now().seconds();
+                time_elapsed = current_time - start_time;
+
+                twist_cmd->twist.linear.x = compute_velocity(x_coeffs,time_elapsed);
+                twist_cmd->twist.linear.y = compute_velocity(y_coeffs,time_elapsed);
+                twist_cmd->twist.linear.z = compute_velocity(z_coeffs,time_elapsed);
+
                 twist_cmd->header.stamp=node_->get_clock()->now();
                 left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
-                rate.sleep();
-
-                if(i++>=200)
-                    break;
             }
+
+            // pull back (object to via point)
+            start_time = node_->get_clock()->now().seconds();
+            time_elapsed = 0.0;
+            x_coeffs = compute_coeffs(time_elapsed,pullback_duration,grasp_conditions.col(0),pullback_conditions.col(0));
+            y_coeffs = compute_coeffs(time_elapsed,pullback_duration,grasp_conditions.col(1),pullback_conditions.col(1));
+            z_coeffs = compute_coeffs(time_elapsed,pullback_duration,grasp_conditions.col(2),pullback_conditions.col(2));
+
+            while(rclcpp::ok() && time_elapsed<pullback_duration){
+                // get grasp position and orientation
+                grasp_position = {current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z};
+                grasp_orientation.w() = current_setpoint_pose_->orientation.w;
+                grasp_orientation.x() = current_setpoint_pose_->orientation.x;
+                grasp_orientation.y() = current_setpoint_pose_->orientation.y;
+                grasp_orientation.z() = current_setpoint_pose_->orientation.z;
+                grasp_orientation.normalize();
+                
+                // get current position and orientaiton
+                current_pose = move_group_interface_->getCurrentPose();
+                current_position = {current_pose.pose.position.x,current_pose.pose.position.y,current_pose.pose.position.z};
+                current_orientation.w() = current_pose.pose.orientation.w;
+                current_orientation.x() = current_pose.pose.orientation.x;
+                current_orientation.y() = current_pose.pose.orientation.y;
+                current_orientation.z() = current_pose.pose.orientation.z;
+                current_orientation.normalize();
+                
+                // simple pid on angular velocity
+                auto angular_velocity=compute_angular_velocity(grasp_orientation,current_orientation);
+                twist_cmd->twist.angular.x = angular_velocity[0];
+                twist_cmd->twist.angular.y = angular_velocity[1];
+                twist_cmd->twist.angular.z = angular_velocity[2];
+
+                Eigen::Matrix3d current_conditions;
+                current_conditions.col(0) << current_position.x(),compute_velocity(x_coeffs, time_elapsed),compute_acceleration(x_coeffs, time_elapsed);
+                current_conditions.col(1) << current_position.y(),compute_velocity(y_coeffs, time_elapsed),compute_acceleration(y_coeffs, time_elapsed);
+                current_conditions.col(2) << current_position.z(),compute_velocity(z_coeffs, time_elapsed),compute_acceleration(z_coeffs, time_elapsed);
+
+                // get the linear velocity here
+                x_coeffs = compute_coeffs(time_elapsed,pullback_duration,current_conditions.col(0),pullback_conditions.col(0));
+                y_coeffs = compute_coeffs(time_elapsed,pullback_duration,current_conditions.col(1),pullback_conditions.col(1));
+                z_coeffs = compute_coeffs(time_elapsed,pullback_duration,current_conditions.col(2),pullback_conditions.col(2));
+                
+                rate.sleep();
+                
+                current_time = node_->get_clock()->now().seconds();
+                time_elapsed = current_time - start_time;
+
+                twist_cmd->twist.linear.x = compute_velocity(x_coeffs,time_elapsed);
+                twist_cmd->twist.linear.y = compute_velocity(y_coeffs,time_elapsed);
+                twist_cmd->twist.linear.z = compute_velocity(z_coeffs,time_elapsed);
+
+                twist_cmd->header.stamp=node_->get_clock()->now();
+                left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
+            }
+            return true;
+        }
+
+        // need to measure velocity and acceleration better
+        // feedforward for now, the velocity and acceleration are computed using the equation
+        double compute_velocity(Eigen::Vector<double,6> coeffs, double current_time){
+            return coeffs[1] + 2*coeffs[2]*current_time + 3*coeffs[3]*std::pow(current_time,2) + 4*coeffs[4]*std::pow(current_time,3) + 5*coeffs[5]*std::pow(current_time,4);
+        }
+
+        double compute_acceleration(Eigen::Vector<double,6> coeffs, double current_time){
+            return 2*coeffs[2] + 6*coeffs[3]*current_time + 12*coeffs[4]*std::pow(current_time,2) + 20*coeffs[5]*std::pow(current_time,3);
+        }
+
+        // the conditions are in the format of position, velocity and acceleration for only one axis and not all 3
+        Eigen::Vector<double,6> compute_coeffs(double start, double finish, Eigen::Vector3d initial_conditions, Eigen::Vector3d final_conditions){
+            Eigen::Matrix<double,6,6> A;
+            A << 
+                1, start, std::pow(start,2), std::pow(start,3), std::pow(start,4), std::pow(start,5),
+                0, 1, 2*start, 3*std::pow(start,2), 4*std::pow(start,3), 5*std::pow(start,4),
+                0, 0, 2, 6*start, 12*std::pow(start,2), 20*std::pow(start,3),
+                1, finish, std::pow(finish,2), std::pow(finish,3), std::pow(finish,4), std::pow(finish,5),
+                0, 1, 2*finish, 3*std::pow(finish,2), 4*std::pow(finish,3), 5*std::pow(finish,4),
+                0, 0, 2, 6*finish, 12*std::pow(finish,2), 20*std::pow(finish,3);
+            Eigen::Vector<double,6> boundary_conditions;
+            boundary_conditions << initial_conditions,final_conditions;
+            return A.inverse()*boundary_conditions;
         }
 
         Eigen::Vector3d compute_angular_velocity(Eigen::Quaterniond target, Eigen::Quaterniond current){ 
