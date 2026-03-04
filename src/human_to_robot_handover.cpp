@@ -33,7 +33,7 @@ workflow :
 */
 
 #define THRESHOLD_HEIGHT 0.2
-#define SENSOR_READING_THRESHOLD 500
+#define SENSOR_READING_THRESHOLD 500 
 
 #include <memory>
 #include <functional>
@@ -255,26 +255,8 @@ class HumanRobotHandover{
             }
             RCLCPP_INFO(node_->get_logger(),"Preparation complete");
             
-            // SERVO SHIT HERE, change this with a better logic
-            auto rate = rclcpp::Rate(50ms);
-            auto twist_cmd = std::make_shared<geometry_msgs::msg::TwistStamped>();
-            twist_cmd->header.frame_id="world";
-            twist_cmd->header.stamp=node_->get_clock()->now();
-            twist_cmd->twist.linear.x=0.0;
-            twist_cmd->twist.linear.y=0.0;
-            twist_cmd->twist.linear.z=0.01 ;
-            twist_cmd->twist.angular.x=0.0;
-            twist_cmd->twist.angular.y=0.0;
-            twist_cmd->twist.angular.z=0.0;
-            int i = 0;
-            while(rclcpp::ok()){
-                twist_cmd->header.stamp=node_->get_clock()->now();
-                left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
-                rate.sleep();
-                if(i++>=200)
-                    break;
-            }
-            // TILL HERE
+            // SERVO SHIT HERE
+            grasp();
 
             RCLCPP_INFO(node_->get_logger(),"Switching to servo type controller");
             if(!unprepare_servo()){
@@ -291,6 +273,74 @@ class HumanRobotHandover{
                 return false;
 
             return true;
+        }
+
+        // SERVO SHIT HERE
+        bool grasp(){
+            // approach till via point, grasp, then move back
+
+            Eigen::Vector3d grasp_position(current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z);
+            Eigen::Quaterniond grasp_orientation;
+            grasp_orientation.w() = current_setpoint_pose_->orientation.w;
+            grasp_orientation.x() = current_setpoint_pose_->orientation.x;
+            grasp_orientation.y() = current_setpoint_pose_->orientation.y;
+            grasp_orientation.z() = current_setpoint_pose_->orientation.z;
+            grasp_orientation.normalize();
+
+            auto current_pose = move_group_interface_->getCurrentPose();
+            Eigen::Vector3d current_position(current_pose.pose.position.x,current_pose.pose.position.y,current_pose.pose.position.z);
+            Eigen::Quaterniond current_orientation;
+            current_orientation.w() = current_pose.pose.orientation.w;
+            current_orientation.x() = current_pose.pose.orientation.x;
+            current_orientation.y() = current_pose.pose.orientation.y;
+            current_orientation.z() = current_pose.pose.orientation.z;
+            current_orientation.normalize();
+            
+            auto rate = rclcpp::Rate(50ms);
+            auto twist_cmd = std::make_shared<geometry_msgs::msg::TwistStamped>();
+            twist_cmd->header.frame_id="world";
+            
+            int i = 0;
+            while(rclcpp::ok()){
+                // get grasp position and orientation
+                grasp_position = {current_setpoint_pose_->position.x,current_setpoint_pose_->position.y,current_setpoint_pose_->position.z};
+                grasp_orientation.w() = current_setpoint_pose_->orientation.w;
+                grasp_orientation.x() = current_setpoint_pose_->orientation.x;
+                grasp_orientation.y() = current_setpoint_pose_->orientation.y;
+                grasp_orientation.z() = current_setpoint_pose_->orientation.z;
+                grasp_orientation.normalize();
+                
+                // get current position and orientaiton
+                current_pose = move_group_interface_->getCurrentPose();
+                current_position = {current_pose.pose.position.x,current_pose.pose.position.y,current_pose.pose.position.z};
+                current_orientation.w() = current_pose.pose.orientation.w;
+                current_orientation.x() = current_pose.pose.orientation.x;
+                current_orientation.y() = current_pose.pose.orientation.y;
+                current_orientation.z() = current_pose.pose.orientation.z;
+                current_orientation.normalize();
+                
+                // simple pid on angular velocity
+                auto angular_velocity=compute_angular_velocity(grasp_orientation,current_orientation);
+                twist_cmd->twist.angular.x = angular_velocity[0];
+                twist_cmd->twist.angular.y = angular_velocity[1];
+                twist_cmd->twist.angular.z = angular_velocity[2];
+
+                // get the linear velocity here
+                
+                twist_cmd->header.stamp=node_->get_clock()->now();
+                left_servo_node_main_delta_twist_cmds_publisher_->publish(*twist_cmd);
+                rate.sleep();
+
+                if(i++>=200)
+                    break;
+            }
+        }
+
+        Eigen::Vector3d compute_angular_velocity(Eigen::Quaterniond target, Eigen::Quaterniond current){ 
+            static float K = 0.5;
+            static float P = 1.0;
+            auto angular_distance = Eigen::AngleAxisd(target*current.inverse());
+            return K*P*angular_distance.angle()*angular_distance.axis();
         }
 
         void gripper_on()
@@ -556,7 +606,6 @@ class HumanRobotHandover{
         rclcpp::Node::SharedPtr node_;
         rclcpp::Node::SharedPtr moveit_node_;
         std::shared_ptr<MoveGroupInterface> move_group_interface_;
-        geometry_msgs::msg::PoseStamped::SharedPtr target_grasping_pose_;
         geometry_msgs::msg::Pose::SharedPtr current_setpoint_pose_;
         int sensor_reading=0;
         int serial_fd_ = -1;
