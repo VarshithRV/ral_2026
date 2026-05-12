@@ -29,6 +29,8 @@ find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
 find_package(ur_msgs REQUIRED)
+find_package(rosidl_runtime_cpp REQUIRED)
+find_package(motion_planning_abstractions REQUIRED)
 
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -54,6 +56,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   tf2_geometry_msgs
   trajectory_msgs
   ur_msgs
+  rosidl_runtime_cpp
+  motion_planning_abstractions
 )
 
 install(
@@ -61,7 +65,7 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-add_executable(human_to_robot_handover src/human_to_robot_handover.cpp)
+add_executable(human_to_robot_handover src/human_to_robot_handover_v3.cpp)
 ament_target_dependencies(human_to_robot_handover ${THIS_PACKAGE_INCLUDE_DEPENDS})
 install(TARGETS
 human_to_robot_handover

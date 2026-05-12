@@ -232,10 +232,30 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    handover_node = Node(
+        package="ral_2026",
+        executable="human_to_robot_handover",
+        name="human_to_robot_handover",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {"use_sim_time": use_sim_time},
+            {
+                "servo_node_ns": "/left_servo_node_main",
+                "joint_traj_controller": "left_scaled_joint_trajectory_controller",
+                "joint_vel_controller": "left_forward_velocity_controller",
+                "alpha":0.8,
+            }
+        ],
+    )
+
     nodes_to_start = [
         left_preaction_server,
         right_preaction_server,
         apriltag_grid_detector,
+        handover_node,
     ]
     
     return nodes_to_start
