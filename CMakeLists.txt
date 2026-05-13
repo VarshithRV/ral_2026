@@ -97,6 +97,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_executable(human_to_robot_handover 
 src/human_to_robot_handover.cpp
 src/object_state_estimation.cpp
+src/cubic_polynomial_solver.cpp
 src/handover.cpp
 )
 ament_target_dependencies(human_to_robot_handover ${THIS_PACKAGE_INCLUDE_DEPENDS})

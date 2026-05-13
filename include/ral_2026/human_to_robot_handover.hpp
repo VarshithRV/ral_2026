@@ -84,10 +84,21 @@ class Handover
         // via point speed 
         double via_point_speed = 0.1; //ms-1
 
+        // arm control data
+        double approach_phase_duration = 3.0;
 
         // helper function to set velocity
         void set_velocity(Eigen::Vector<double,3> linear_velocity, Eigen::AngleAxisd angular_velocity);
         void process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr msg);
         Eigen::Vector3d filter_linear_velocity(Eigen::Vector<double,3> filtered_linear_velocity, Eigen::Vector<double,3> linear_velocity);
         void state_pose_publisher_cb_();
+        Eigen::Matrix<double,4,3> get_coeffs(
+            Eigen::Vector3d initial_position, 
+            Eigen::Vector3d final_position, 
+            Eigen::Vector3d initial_velocity, 
+            Eigen::Vector3d final_velocity, 
+            double duration
+        );
+        Eigen::Vector3d get_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
+
 };
