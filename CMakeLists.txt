@@ -65,8 +65,44 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-add_executable(human_to_robot_handover src/human_to_robot_handover_v3.cpp)
+ament_export_include_directories(include)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# add_library(human_to_robot_handover SHARED
+#   src/human_to_robot_handover.cpp
+# )
+# target_include_directories(human_to_robot_handover
+#   PUBLIC
+#     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#     $<INSTALL_INTERFACE:include>
+# )
+# ament_target_dependencies(human_to_robot_handover
+#   ${THIS_PACKAGE_INCLUDE_DEPENDS}
+# )
+# install(
+#   TARGETS human_to_robot_handover
+#   EXPORT export_human_to_robot_handover
+#   LIBRARY DESTINATION lib
+#   ARCHIVE DESTINATION lib
+#   RUNTIME DESTINATION bin
+#   INCLUDES DESTINATION include
+# )
+# ament_export_targets(export_human_to_robot_handover HAS_LIBRARY_TARGET)
+
+add_executable(human_to_robot_handover 
+src/human_to_robot_handover.cpp
+src/object_state_estimation.cpp
+src/handover.cpp
+)
 ament_target_dependencies(human_to_robot_handover ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_include_directories(human_to_robot_handover PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 install(TARGETS
 human_to_robot_handover
 DESTINATION lib/${PROJECT_NAME}

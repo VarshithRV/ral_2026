@@ -251,11 +251,59 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    left_task_space_cubic_polynomial_trajectory_server = Node(
+        package="motion_planning_abstractions",
+        executable="task_space_cubic_polynomial_trajectory_server",
+        name="left_task_space_cubic_polynomial_trajectory_server",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {
+                "planning_group" : "left_ur16e",
+                "maximum_task_space_velocity" : 1.0,
+                "maximum_task_space_acceleration" : 3.0,
+                "maximum_joint_space_velocity" : 3.15,
+                "maximum_joint_space_acceleration" : 3.14,
+                "joint_prefix" : "left_",
+                "joint_trajectory_controller" : "left_scaled_joint_trajectory_controller",
+                "endeffector_link" : "left_tool0",
+            },
+            {"use_sim_time":use_sim_time},
+        ],
+    )
+    
+    right_task_space_cubic_polynomial_trajectory_server = Node(
+        package="motion_planning_abstractions",
+        executable="task_space_cubic_polynomial_trajectory_server",
+        name="right_task_space_cubic_polynomial_trajectory_server",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {
+                "planning_group_" : "right_ur16e",
+                "maximum_task_space_velocity_" : 1.0,
+                "maximum_task_space_acceleration_" : 3.0,
+                "maximum_joint_space_velocity_" : 3.15,
+                "maximum_joint_space_acceleration_" : 3.14,
+                "joint_prefix" : "left_",
+                "joint_trajectory_controller_" : "right_scaled_joint_trajectory_controller",
+                "endeffector_link_" : "right_tool0",
+            },
+            {"use_sim_time":use_sim_time},
+        ],
+    )
+
     nodes_to_start = [
         left_preaction_server,
         right_preaction_server,
         apriltag_grid_detector,
         handover_node,
+        left_task_space_cubic_polynomial_trajectory_server,
+        right_task_space_cubic_polynomial_trajectory_server,
     ]
     
     return nodes_to_start
