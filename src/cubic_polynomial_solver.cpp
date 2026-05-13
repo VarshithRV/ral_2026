@@ -39,8 +39,12 @@ Eigen::Matrix<double,4,3> Handover::get_coeffs(Eigen::Vector3d initial_position,
     return A.inverse()*B;
 }
 
-
-Eigen::Vector3d Handover::get_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau){
+Eigen::Vector3d Handover::get_linear_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau){
     Eigen::Vector4d vel_fn(0,1,2*tau,3*tau*tau);
     return coeff_matrix.transpose()*vel_fn;
+}
+
+Eigen::Vector3d Handover::get_angular_vel(Eigen::Quaterniond target, Eigen::Quaterniond current){
+    auto error = Eigen::AngleAxisd(target*current.inverse());
+    return (P*error.angle()*error.axis());
 }

@@ -87,6 +87,8 @@ class Handover
         // arm control data
         double approach_phase_duration = 3.0;
 
+        double P = 1.0;
+
         // helper function to set velocity
         void set_velocity(Eigen::Vector<double,3> linear_velocity, Eigen::AngleAxisd angular_velocity);
         void process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr msg);
@@ -99,6 +101,7 @@ class Handover
             Eigen::Vector3d final_velocity, 
             double duration
         );
-        Eigen::Vector3d get_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
+        Eigen::Vector3d get_linear_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
+        Eigen::Vector3d get_angular_vel(Eigen::Quaterniond setpoint, Eigen::Quaterniond current);
 
 };
