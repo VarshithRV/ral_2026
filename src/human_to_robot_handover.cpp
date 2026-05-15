@@ -65,6 +65,7 @@ Handover::Handover(rclcpp::Node::SharedPtr node){
 
     // timer
     state_pose_publisher_timer_ = node_->create_wall_timer(50ms,[this](){state_pose_publisher_cb_();},parallel_cb_group_);
+    ee_velocity_calculator_timer_ = node_->create_wall_timer(50ms,[this](){get_ee_linear_vel();},parallel_cb_group_);
 }
 
 // helper function to set velocity

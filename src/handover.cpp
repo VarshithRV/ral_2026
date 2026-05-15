@@ -26,19 +26,18 @@ bool Handover::handover(){
     ee_servo_handle_->start_servo_();
     std::cout<<"ready to move"<<std::endl;
     
-    // auto rate = rclcpp::Rate(50ms);
+    auto rate = rclcpp::Rate(50ms);
     
-    // int i = 0;
-    // while(rclcpp::ok()){
-    //     i++;
-    //     set_velocity(Eigen::Vector<double,3>(0,0,-0.05),Eigen::AngleAxisd());
-    //     auto current_ee_pose = dual_arm_control_interface_->get_current_ee_pose("left");
-    //     RCLCPP_INFO(LOGGER,"Current position : %.2f,%.2f,%.2f",current_ee_pose->position.x,current_ee_pose->position.y,current_ee_pose->position.z);
-    //     rate.sleep();
-    //     if(i>100){
-    //         break;
-    //     }
-    // }
+    int i = 0;
+    while(rclcpp::ok()){
+        i++;
+        set_velocity(Eigen::Vector<double,3>(0,0,-0.05),Eigen::AngleAxisd());
+        auto current_ee_pose = dual_arm_control_interface_->get_current_ee_pose("left");
+        rate.sleep();
+        if(i>200){
+            break;
+        }
+    }
     
     std::cout<<"Stopping servo now"<<std::endl;
     ee_servo_handle_->stop_servo_();

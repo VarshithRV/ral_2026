@@ -48,6 +48,32 @@ void Handover::process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr ms
     via_point_linear_velocity = via_point_speed*via_point_orientation.toRotationMatrix().col(2);
 }
 
+// EE Velocity 
+void Handover::get_ee_linear_vel(){
+    auto current_ee_pose = dual_arm_control_interface_->get_current_ee_pose("left");
+    Eigen::Vector3d current_ee_position(
+        current_ee_pose->position.x,
+        current_ee_pose->position.y,
+        current_ee_pose->position.z
+    );
+    
+    //  write code to calculate the end effector linear velocity
+    if(ee_position_window.size()<5){
+        ee_position_window.push_back(current_ee_position);
+    }
+    else{
+        ee_position_window.push_back(current_ee_position);
+        ee_position_window.erase(ee_position_window.begin());
+    }
+
+    float elapsed_time = (ee_position_window.size() - 1)*0.05;
+    Eigen::Vector3d avg_window_velocity;
+    if(elapsed_time>0)
+        avg_window_velocity=(ee_position_window.back() - ee_position_window.front())/elapsed_time;
+    
+    ee_linear_velocity = avg_window_velocity;
+}
+
 void Handover::state_pose_publisher_cb_(){
     geometry_msgs::msg::PoseStamped via_point_pose;
     geometry_msgs::msg::PoseStamped grasp_pose;

@@ -48,6 +48,7 @@ class Handover
         
         // timers
         rclcpp::TimerBase::SharedPtr state_pose_publisher_timer_;
+        rclcpp::TimerBase::SharedPtr ee_velocity_calculator_timer_;
 
         // clock
         rclcpp::Clock clock_;
@@ -75,6 +76,9 @@ class Handover
         Eigen::Vector3d via_point_linear_velocity;
         Eigen::Vector3d via_point_filtered_linear_velocity;
         Eigen::AngleAxisd via_point_angular_velocity;
+        // ee velocity 
+        Eigen::Vector3d ee_linear_velocity=Eigen::Vector3d::Zero();
+        std::vector<Eigen::Vector3d> ee_position_window;
         // state window size
         int state_window_size = 5;
         // object to grasp transform
@@ -103,5 +107,6 @@ class Handover
         );
         Eigen::Vector3d get_linear_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
         Eigen::Vector3d get_angular_vel(Eigen::Quaterniond setpoint, Eigen::Quaterniond current);
+        void get_ee_linear_vel();
 
 };
