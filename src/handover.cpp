@@ -36,7 +36,7 @@ bool Handover::handover()
         if(i>200){
             RCLCPP_ERROR(LOGGER,"Timed out after waiting 10s");
         }
-        i++
+        i++;
         rate.sleep();
     }
 
