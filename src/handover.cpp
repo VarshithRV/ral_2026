@@ -1,6 +1,4 @@
 // for the actual handover function
-#ifndef HANDOVER_HPP
-#define HANDOVER_HPP
 #include <functional>
 #include <memory>
 #include <chrono>
@@ -10,7 +8,6 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "motion_planning_abstractions/ee_servo.hpp"
 #include "motion_planning_abstractions/dual_arm_waypoint_programming.hpp"
-#endif
 
 #include "ral_2026/human_to_robot_handover.hpp"
 

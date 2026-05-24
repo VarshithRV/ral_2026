@@ -1,6 +1,4 @@
 // contains the driver code, constructor and other general helper functions
-#ifndef HANDOVER_HPP
-#define HANDOVER_HPP
 #include <functional>
 #include <memory>
 #include <chrono>
@@ -10,12 +8,13 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "motion_planning_abstractions/ee_servo.hpp"
 #include "motion_planning_abstractions/dual_arm_waypoint_programming.hpp"
-#endif
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "ral_2026/human_to_robot_handover.hpp"
 
 using namespace std::chrono_literals;
-
 
 Handover::Handover(rclcpp::Node::SharedPtr node){
     if(node == nullptr){
@@ -36,6 +35,9 @@ Handover::Handover(rclcpp::Node::SharedPtr node){
     parallel_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
     mex_cb_group_ = node_->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
+    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+
     // subscribers
     rclcpp::SubscriptionOptions sub_opts;
     sub_opts.callback_group=parallel_cb_group_;

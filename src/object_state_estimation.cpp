@@ -1,8 +1,4 @@
 // estimate via pose, via velocity, grasp pose, grasp velocity from the object input
-
-#ifndef HANDOVER_HPP
-#define HANDOVER_HPP
-
 #include <functional>
 #include <memory>
 #include <chrono>
@@ -12,8 +8,9 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "motion_planning_abstractions/ee_servo.hpp"
 #include "motion_planning_abstractions/dual_arm_waypoint_programming.hpp"
-
-#endif
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include "ral_2026/human_to_robot_handover.hpp"
 
@@ -33,8 +30,26 @@ void Handover::process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr ms
     
     object_pose_received = true;
     
-    Eigen::Vector3d object_position(msg->pose.position.x,msg->pose.position.y,msg->pose.position.z);
-    Eigen::Quaterniond object_orientation(msg->pose.orientation.w,msg->pose.orientation.x,msg->pose.orientation.y,msg->pose.orientation.z);
+    // camera optical frame -> world frame
+    geometry_msgs::msg::PoseStamped camera_pose, world_pose;
+
+    camera_pose.header = msg->header;
+    camera_pose.pose = msg->pose;
+    Eigen::Vector3d object_position;
+    Eigen::Quaterniond object_orientation;
+
+    try{
+        world_pose = tf_buffer_->transform(camera_pose, "world");
+
+        object_position = {world_pose.pose.position.x,world_pose.pose.position.y,world_pose.pose.position.z};
+
+        object_orientation = {world_pose.pose.orientation.w,world_pose.pose.orientation.x,world_pose.pose.orientation.y,world_pose.pose.orientation.z};
+
+    }
+    catch (tf2::TransformException &ex){
+        RCLCPP_WARN(node_->get_logger(), "TF transform failed: %s", ex.what());
+        return;
+    }
 
     // grasp pose
     grasp_orientation = object_orientation*object_to_grasp_orientation_transform;

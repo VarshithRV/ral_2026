@@ -11,7 +11,9 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "motion_planning_abstractions/ee_servo.hpp"
 #include "motion_planning_abstractions/dual_arm_waypoint_programming.hpp"
-#endif
+#include "tf2_ros/transform_listener.h"
+#include "tf2_ros/buffer.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 using namespace std::chrono_literals;
 
@@ -49,6 +51,9 @@ class Handover
         // timers
         rclcpp::TimerBase::SharedPtr state_pose_publisher_timer_;
         rclcpp::TimerBase::SharedPtr ee_velocity_calculator_timer_;
+
+        std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+        std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
         // clock
         rclcpp::Clock clock_;
@@ -128,3 +133,5 @@ class Handover
             double dt
         );
 };
+
+#endif
