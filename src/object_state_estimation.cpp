@@ -35,6 +35,7 @@ void Handover::process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr ms
 
     camera_pose.header = msg->header;
     camera_pose.pose = msg->pose;
+    camera_pose.header.stamp = rclcpp::Time(0);
     Eigen::Vector3d object_position;
     Eigen::Quaterniond object_orientation;
 
