@@ -69,8 +69,6 @@ void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_p
         Eigen::Vector3d target_position = final_position;
         Eigen::Vector3d target_velocity = final_velocity;
 
-        Eigen::Vector3d position_error = target_position - current_position;
-
         Eigen::Vector3d velocity_setpoint = solve_mpc_velocity_setpoint(
                 current_position,
                 current_velocity,
@@ -78,7 +76,21 @@ void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_p
                 target_velocity,
                 dt
         );
-        velocity_setpoint += 0.8 * position_error;
+
+        Eigen::Vector3d position_error = target_position - current_position;
+
+        Eigen::Vector3d bias_velocity = 1.2 * position_error;
+        bias_velocity = clamp_norm(bias_velocity, 0.15);
+            
+        Eigen::Vector3d raw_velocity_setpoint = velocity_setpoint + bias_velocity;
+        raw_velocity_setpoint = clamp_norm(raw_velocity_setpoint, 0.20);
+            
+        Eigen::Vector3d dv = raw_velocity_setpoint - previous_velocity_command;
+        dv = clamp_norm(dv, 0.60 * dt);
+            
+        velocity_setpoint = previous_velocity_command + dv;
+        velocity_setpoint = previous_velocity_command + dv;
+        previous_velocity_command = velocity_setpoint;
 
         set_velocity(k(velocity_setpoint), Eigen::AngleAxisd());
         double distance_to_target = (target_position - current_position).norm();

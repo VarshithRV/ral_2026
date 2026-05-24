@@ -112,6 +112,7 @@ class Handover
         double g(double delta_t); // function over velocity inference instant
         Eigen::Vector3d k(Eigen::Vector3d vel_setpoint); // function over output velocity
         
+        Eigen::Vector3d previous_velocity_command = Eigen::Vector3d::Zero();
         void MPC_go_to_state(double approach_duration,Eigen::Vector3d final_position,Eigen::Vector3d final_velocity);
         Eigen::Vector3d solve_mpc_velocity_setpoint(
             const Eigen::Vector3d& current_position,
