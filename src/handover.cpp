@@ -57,7 +57,7 @@ void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_p
         //     break;
         // }
 
-        auto current_ee_pose=dual_arm_control_interface_->get_current_ee_pose("left");
+        auto current_ee_pose=dual_arm_control_interface_->get_current_ee_pose("right");
 
         Eigen::Vector3d current_position(
             current_ee_pose->position.x,

@@ -50,7 +50,7 @@ void Handover::process_object_pose(geometry_msgs::msg::PoseStamped::SharedPtr ms
 
 // EE Velocity 
 void Handover::get_ee_linear_vel(){
-    auto current_ee_pose = dual_arm_control_interface_->get_current_ee_pose("left");
+    auto current_ee_pose = dual_arm_control_interface_->get_current_ee_pose("right");
     Eigen::Vector3d current_ee_position(
         current_ee_pose->position.x,
         current_ee_pose->position.y,

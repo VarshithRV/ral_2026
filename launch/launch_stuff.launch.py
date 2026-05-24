@@ -162,6 +162,51 @@ def launch_setup(context, *args, **kwargs):
 
     #### nodes
 
+    # left_preaction_server = Node(
+    #     package="motion_planning_abstractions",
+    #     executable="predefined_state_server",
+    #     name="left_preaction_server",
+    #     output="screen",
+    #     parameters=[
+    #         robot_description,
+    #         robot_description_semantic,
+    #         robot_description_kinematics,
+    #         {
+    #             "planning_group": "left_ur16e",
+    #             "shoulder_pan": 0.15949875079531686,
+    #             "shoulder_lift": -1.2477428991054431,
+    #             "elbow": -1.9956972244574434,
+    #             "wrist_1": -3.077024939621932,
+    #             "wrist_2": -1.4171686983532517,
+    #             "wrist_3": 0.07695608771623892,
+    #             "side": "left",
+    #         },
+    #         {"use_sim_time": use_sim_time},
+    #     ],
+    # )
+
+    # right_preaction_server = Node(
+    #     package="motion_planning_abstractions",
+    #     executable="predefined_state_server",
+    #     name="right_preaction_server",
+    #     output="screen",
+    #     parameters=[
+    #         robot_description,
+    #         robot_description_semantic,
+    #         robot_description_kinematics,
+    #         {
+    #             "planning_group": "right_ur16e",
+    #             "shoulder_pan": -3.2785912195788782,
+    #             "shoulder_lift": -1.6929518185057582,
+    #             "elbow": 2.1487663427936,
+    #             "wrist_1": -2.3819247684874476,
+    #             "wrist_2": -2.7175918261157435,
+    #             "wrist_3": 1.8448426723480225,
+    #             "side": "right",
+    #         },
+    #         {"use_sim_time": use_sim_time},
+    #     ],
+    # )
     left_preaction_server = Node(
         package="motion_planning_abstractions",
         executable="predefined_state_server",
@@ -173,12 +218,12 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             {
                 "planning_group": "left_ur16e",
-                "shoulder_pan": 0.15949875079531686,
-                "shoulder_lift": -1.2477428991054431,
-                "elbow": -1.9956972244574434,
-                "wrist_1": -3.077024939621932,
-                "wrist_2": -1.4171686983532517,
-                "wrist_3": 0.07695608771623892,
+                "shoulder_pan": -3.6966522477524872,
+                "shoulder_lift": -1.5008206637705281,
+                "elbow": 1.6937414043405432,
+                "wrist_1": -0.21343745974499936,
+                "wrist_2": -0.4225,
+                "wrist_3": 0.023092102970681927,
                 "side": "left",
             },
             {"use_sim_time": use_sim_time},
@@ -196,12 +241,12 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             {
                 "planning_group": "right_ur16e",
-                "shoulder_pan": -3.2785912195788782,
-                "shoulder_lift": -1.6929518185057582,
-                "elbow": 2.1487663427936,
-                "wrist_1": -2.3819247684874476,
-                "wrist_2": -2.7175918261157435,
-                "wrist_3": 1.8448426723480225,
+                "shoulder_pan": 0.15949875079531686,
+                "shoulder_lift": -1.2477428991054431,
+                "elbow": -1.9956972244574434,
+                "wrist_1": -3.077024939621932,
+                "wrist_2": -1.4171686983532517,
+                "wrist_3": 0.07695608771623892,
                 "side": "right",
             },
             {"use_sim_time": use_sim_time},
@@ -243,9 +288,9 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             {"use_sim_time": use_sim_time},
             {
-                "servo_node_ns": "/left_servo_node_main",
-                "joint_traj_controller": "left_scaled_joint_trajectory_controller",
-                "joint_vel_controller": "left_forward_velocity_controller",
+                "servo_node_ns": "/right_servo_node_main",
+                "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                "joint_vel_controller": "right_forward_velocity_controller",
                 "alpha":0.8,
             }
         ],
