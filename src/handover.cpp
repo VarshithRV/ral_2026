@@ -28,9 +28,9 @@ bool Handover::handover()
 
     Eigen::Vector3d zero_velocity = Eigen::Vector3d::Zero();
 
-    MPC_go_to_state(approach_phase_duration,via_point_position,via_point_linear_velocity);
-    MPC_go_to_state(1.0,grasp_position,zero_velocity);
-    MPC_go_to_state(1.0,via_point_position,zero_velocity);
+    MPC_go_to_state(approach_phase_duration,via_point_position,via_point_linear_velocity,via_point_orientation);
+    MPC_go_to_state(1.0,grasp_position,zero_velocity,grasp_orientation);
+    MPC_go_to_state(1.0,via_point_position,zero_velocity,grasp_orientation);
 
     std::cout<<"Stopping servo now"<<std::endl;
     ee_servo_handle_->stop_servo_();
@@ -41,7 +41,7 @@ bool Handover::handover()
     return true;
 }
 
-void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_position, Eigen::Vector3d final_velocity){
+void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_position, Eigen::Vector3d final_velocity, Eigen::Quaterniond final_orientation){
     const double dt = 0.05;   // 20 Hz control loop
     auto rate = rclcpp::Rate(20.0);
 
@@ -64,10 +64,18 @@ void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_p
             current_ee_pose->position.y,
             current_ee_pose->position.z
         );
+        Eigen::Quaterniond current_orientation(
+            current_ee_pose->orientation.w,
+            current_ee_pose->orientation.x,
+            current_ee_pose->orientation.y,
+            current_ee_pose->orientation.z
+        );
 
         Eigen::Vector3d current_velocity = ee_linear_velocity;
         Eigen::Vector3d target_position = final_position;
         Eigen::Vector3d target_velocity = final_velocity;
+        Eigen::Quaterniond target_orientation = final_orientation;
+
 
         Eigen::Vector3d velocity_setpoint = solve_mpc_velocity_setpoint(
                 current_position,
@@ -91,8 +99,8 @@ void Handover::MPC_go_to_state(double approach_duration, Eigen::Vector3d final_p
         velocity_setpoint = previous_velocity_command + dv;
         velocity_setpoint = previous_velocity_command + dv;
         previous_velocity_command = velocity_setpoint;
-
-        set_velocity(k(velocity_setpoint), Eigen::AngleAxisd());
+        Eigen::Vector3d angular_velocity = get_angular_vel(final_orientation,current_orientation);
+        set_velocity(k(velocity_setpoint), Eigen::AngleAxisd(angular_velocity.norm(),angular_velocity/angular_velocity.norm()));
         double distance_to_target = (target_position - current_position).norm();
         if (distance_to_target < 0.015){
             std::cout << "Reached target region" << std::endl;
