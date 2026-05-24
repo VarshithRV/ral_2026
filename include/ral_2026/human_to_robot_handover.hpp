@@ -111,5 +111,19 @@ class Handover
         double f(double duration,int n, double delta_t); // function over traj duration
         double g(double delta_t); // function over velocity inference instant
         Eigen::Vector3d k(Eigen::Vector3d vel_setpoint); // function over output velocity
-        void MPC_go_to_state(double approach_duration);
+        
+        void MPC_go_to_state(double approach_duration,Eigen::Vector3d final_position,Eigen::Vector3d final_velocity);
+        Eigen::Vector3d solve_mpc_velocity_setpoint(
+            const Eigen::Vector3d& current_position,
+            const Eigen::Vector3d& current_velocity,
+            const Eigen::Vector3d& target_position,
+            const Eigen::Vector3d& target_velocity,
+            double dt
+        );
+        Eigen::Vector3d clamp_norm(const Eigen::Vector3d& v, double max_norm);
+        Eigen::Matrix<double, 3, Eigen::Dynamic> project_velocity_constraints(
+            const Eigen::Matrix<double, 3, Eigen::Dynamic>& U,
+            const Eigen::Vector3d& previous_velocity,
+            double dt
+        );
 };
