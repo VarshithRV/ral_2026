@@ -24,6 +24,22 @@ bool Handover::handover()
     std::cout<<"ready to move"<<std::endl;
 
     Eigen::Vector3d zero_velocity = Eigen::Vector3d::Zero();
+    
+    // wait until the the object goes up by 10cm
+    double obj_z = grasp_position.z();
+    auto rate = rclcpp::Rate(50ms);
+    RCLCPP_INFO(LOGGER,"Waiting for the object to be lifted up by 10cm");
+    int i = 0;
+    while(rclcpp::ok()){
+        if(grasp_position.z()-obj_z>0.1)
+            break;
+        if(i>200){
+            RCLCPP_ERROR(LOGGER,"Timed out after waiting 10s");
+        }
+        i++
+        rate.sleep();
+    }
+
 
     MPC_go_to_state(approach_phase_duration,via_point_position,via_point_linear_velocity,via_point_orientation);
     MPC_go_to_state(1.0,grasp_position,zero_velocity,grasp_orientation);
