@@ -41,7 +41,7 @@ Handover::Handover(rclcpp::Node::SharedPtr node){
     sub_opts.callback_group=parallel_cb_group_;
 
     object0_filtered_pose_subscriber_ = node_->create_subscription<geometry_msgs::msg::PoseStamped>(
-        "/object0_filtered_pose",
+        "/apriltag_grid_detector/object0_filtered_pose",
         10,
         [this](geometry_msgs::msg::PoseStamped::SharedPtr msg){
             process_object_pose(msg);
