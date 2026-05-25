@@ -54,21 +54,20 @@ bool Handover::handover()
 
     Eigen::Vector3d zero_velocity = Eigen::Vector3d::Zero();
     
-    // comment this out for testing
-    // // wait until the the object goes up by 10cm
-    // double obj_z = grasp_position.z();
-    // auto rate = rclcpp::Rate(50ms);
-    // RCLCPP_INFO(LOGGER,"Waiting for the object to be lifted up by 10cm");
-    // int i = 0;
-    // while(rclcpp::ok()){
-    //     if(grasp_position.z()-obj_z>0.1)
-    //         break;
-    //     if(i>1000){
-    //         RCLCPP_ERROR(LOGGER,"Timed out after waiting 50s");
-    //     }
-    //     i++;
-    //     rate.sleep();
-    // }
+    // wait until the the object goes up by 10cm
+    double obj_z = grasp_position.z();
+    auto rate = rclcpp::Rate(50ms);
+    RCLCPP_INFO(LOGGER,"Waiting for the object to be lifted up by 10cm");
+    int i = 0;
+    while(rclcpp::ok()){
+        if(grasp_position.z()-obj_z>0.1)
+            break;
+        if(i>1000){
+            RCLCPP_ERROR(LOGGER,"Timed out after waiting 50s");
+        }
+        i++;
+        rate.sleep();
+    }
     
     // approach
     MPC_go_to_approach_state(approach_phase_duration);
