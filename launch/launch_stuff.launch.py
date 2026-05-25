@@ -21,6 +21,13 @@ def launch_setup(context, *args, **kwargs):
     moveit_config_file = LaunchConfiguration("moveit_config_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     
+    left_tool0_x = 0.0
+    left_tool0_y = 0.0
+    left_tool0_z = 0.189
+    right_tool0_x = 0.0
+    right_tool0_y = 0.0
+    right_tool0_z = 0.155
+
     left_ur_type = LaunchConfiguration("left_ur_type")
     left_safety_limits = LaunchConfiguration("left_safety_limits")
     left_safety_pos_margin = LaunchConfiguration("left_safety_pos_margin")
@@ -86,6 +93,15 @@ def launch_setup(context, *args, **kwargs):
             "left_output_recipe_filename:=",
             "rtde_output_recipe.txt",
             " ",
+            "left_tool0_x:=",
+            left_tool0_x,
+            " ",
+            "left_tool0_y:=",
+            left_tool0_y,
+            " ",
+            "left_tool0_z:=",
+            left_tool0_z,
+            " ",
             "right_robot_ip:=xxx.yyy.zzz.www",
             " ",
             "right_tf_prefix:=right_",
@@ -122,6 +138,16 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "right_output_recipe_filename:=",
             "rtde_output_recipe.txt",
+            " ",
+            "right_tool0_x:=",
+            right_tool0_x,
+            " ",
+            "right_tool0_y:=",
+            right_tool0_y,
+            " ",
+            "right_tool0_z:=",
+            right_tool0_z,
+            " ",
         ]
     )
 
