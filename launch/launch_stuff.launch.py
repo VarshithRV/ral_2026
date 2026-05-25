@@ -21,12 +21,12 @@ def launch_setup(context, *args, **kwargs):
     moveit_config_file = LaunchConfiguration("moveit_config_file")
     use_sim_time = LaunchConfiguration("use_sim_time")
     
-    left_tool0_x = 0.0
-    left_tool0_y = 0.0
-    left_tool0_z = 0.189
-    right_tool0_x = 0.0
-    right_tool0_y = 0.0
-    right_tool0_z = 0.155
+    left_tool0_x = str(0.0)
+    left_tool0_y = str(0.0)
+    left_tool0_z = str(0.189)
+    right_tool0_x = str(0.0)
+    right_tool0_y = str(0.0)
+    right_tool0_z = str(0.175)
 
     left_ur_type = LaunchConfiguration("left_ur_type")
     left_safety_limits = LaunchConfiguration("left_safety_limits")
