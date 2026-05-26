@@ -71,15 +71,18 @@ bool Handover::handover()
     
     // approach
     MPC_go_to_approach_state(approach_phase_duration);
-    
+
+    auto freeze_grasp_position(grasp_position), freeze_via_point_position(via_point_position);
+    auto freeze_grasp_orientation(grasp_orientation), freeze_via_point_orientation(via_point_orientation);
+
     // grasp
-    MPC_go_to_state(1.0,grasp_position,zero_velocity,grasp_orientation);
+    MPC_go_to_state(1.0,freeze_grasp_position,zero_velocity,freeze_grasp_orientation);
     RCLCPP_INFO(LOGGER,"Graaaaaasp!!");
     gripper_on();
     std::this_thread::sleep_for(0.5s);
 
     // retract
-    MPC_go_to_state(1.0,via_point_position,zero_velocity,grasp_orientation);
+    MPC_go_to_state(1.0,freeze_via_point_position,zero_velocity,freeze_grasp_orientation);
     
     std::cout<<"Stopping servo now"<<std::endl;
     ee_servo_handle_->stop_servo_();
@@ -121,7 +124,7 @@ bool Handover::handover()
     );
 
     gripper_off();
-
+    std::this_thread::sleep_for(1s);
     // move up a bit
     dual_arm_control_interface_->execute_waypoints_cubic(
         std::vector<geometry_msgs::msg::Pose>{
