@@ -34,12 +34,12 @@ bool Handover::handover()
     // move to right preaction states
     dual_arm_control_interface_->move_to_joint_positions(
         std::vector<double>{
-            0.15949875079531686,
-            -1.2477428991054431,
-            -1.9956972244574434,
-            -3.077024939621932,
-            -1.4171686983532517,
-            0.07695608771623892,
+            0.15968317804148882,
+            -1.247802739692411,
+            -1.9956461569496642,
+            -1.1175868831372546,
+            1.5685058669109873,
+            -2.958524343639371,
         },
         dual_arm_control_interface_->right_move_group_interface_
     );
@@ -91,76 +91,76 @@ bool Handover::handover()
 
     std::this_thread::sleep_for(0.2s);
     
-    // need to place here
-    dual_arm_control_interface_->execute_waypoints_cubic(
-        std::vector<geometry_msgs::msg::Pose>{
-            [this](){
-                geometry_msgs::msg::Pose place_pose;
-                place_pose.position.x = 0.386;
-                place_pose.position.y = -0.029;
-                place_pose.position.z = 0.206;
-                place_pose.orientation.x = 0.720;
-                place_pose.orientation.y = -0.024;
-                place_pose.orientation.z = 0.027;
-                place_pose.orientation.w = 0.694;
-                return place_pose;
-            }(),
-            [this](){
-                geometry_msgs::msg::Pose place_pose;
-                place_pose.position.x = 0.386;
-                place_pose.position.y = -0.029;
-                place_pose.position.z = 0.076;
-                place_pose.orientation.x = 0.720;
-                place_pose.orientation.y = -0.024;
-                place_pose.orientation.z = 0.027;
-                place_pose.orientation.w = 0.694;
-                return place_pose;
-            }()
-        },
-        std::vector<double>{2.0,1.0},
-        0.3,
-        0.05,
-        "right"
-    );
+    // // need to place here
+    // dual_arm_control_interface_->execute_waypoints_cubic(
+    //     std::vector<geometry_msgs::msg::Pose>{
+    //         [this](){
+    //             geometry_msgs::msg::Pose place_pose;
+    //             place_pose.position.x = 0.386;
+    //             place_pose.position.y = -0.029;
+    //             place_pose.position.z = 0.206;
+    //             place_pose.orientation.x = 0.720;
+    //             place_pose.orientation.y = -0.024;
+    //             place_pose.orientation.z = 0.027;
+    //             place_pose.orientation.w = 0.694;
+    //             return place_pose;
+    //         }(),
+    //         [this](){
+    //             geometry_msgs::msg::Pose place_pose;
+    //             place_pose.position.x = 0.386;
+    //             place_pose.position.y = -0.029;
+    //             place_pose.position.z = 0.076;
+    //             place_pose.orientation.x = 0.720;
+    //             place_pose.orientation.y = -0.024;
+    //             place_pose.orientation.z = 0.027;
+    //             place_pose.orientation.w = 0.694;
+    //             return place_pose;
+    //         }()
+    //     },
+    //     std::vector<double>{2.0,1.0},
+    //     0.3,
+    //     0.05,
+    //     "right"
+    // );
 
-    gripper_off();
-    std::this_thread::sleep_for(1s);
-    // move up a bit
-    dual_arm_control_interface_->execute_waypoints_cubic(
-        std::vector<geometry_msgs::msg::Pose>{
-            [this](){
-                geometry_msgs::msg::Pose place_pose;
-                place_pose.position.x = 0.386;
-                place_pose.position.y = -0.079;
-                place_pose.position.z = 0.256;
-                place_pose.orientation.x = 0.720;
-                place_pose.orientation.y = -0.024;
-                place_pose.orientation.z = 0.027;
-                place_pose.orientation.w = 0.694;
-                return place_pose;
-            }()
-        },
-        std::vector<double>{2.0},
-        0.3,
-        0.0,
-        "right"
-    );
+    // gripper_off();
+    // std::this_thread::sleep_for(1s);
+    // // move up a bit
+    // dual_arm_control_interface_->execute_waypoints_cubic(
+    //     std::vector<geometry_msgs::msg::Pose>{
+    //         [this](){
+    //             geometry_msgs::msg::Pose place_pose;
+    //             place_pose.position.x = 0.386;
+    //             place_pose.position.y = -0.079;
+    //             place_pose.position.z = 0.256;
+    //             place_pose.orientation.x = 0.720;
+    //             place_pose.orientation.y = -0.024;
+    //             place_pose.orientation.z = 0.027;
+    //             place_pose.orientation.w = 0.694;
+    //             return place_pose;
+    //         }()
+    //     },
+    //     std::vector<double>{2.0},
+    //     0.3,
+    //     0.0,
+    //     "right"
+    // );
 
-    // gripper neutral
-    gripper_neutral();
+    // // gripper neutral
+    // gripper_neutral();
 
-    // move to right preaction
-    dual_arm_control_interface_->move_to_joint_positions(
-        std::vector<double>{
-            0.15949875079531686,
-            -1.2477428991054431,
-            -1.9956972244574434,
-            -3.077024939621932,
-            -1.4171686983532517,
-            0.07695608771623892,
-        },
-        dual_arm_control_interface_->right_move_group_interface_
-    );
+    // // move to right preaction
+    // dual_arm_control_interface_->move_to_joint_positions(
+    //     std::vector<double>{
+    //         0.15968317804148882,
+    //         -1.247802739692411,
+    //         -1.9956461569496642,
+    //         -1.1175868831372546,
+    //         1.5685058669109873,
+    //         -2.958524343639371,
+    //     },
+    //     dual_arm_control_interface_->right_move_group_interface_
+    // );
 
     return true;
 }
