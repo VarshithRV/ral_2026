@@ -87,9 +87,9 @@ class Handover
         // state window size
         int state_window_size = 5;
         // object to grasp transform
-        Eigen::Vector3d object_to_grasp_position_transform = Eigen::Vector3d(0.0,-0.05,-0.015);
+        Eigen::Vector3d object_to_grasp_position_transform = Eigen::Vector3d(-0.03,-0.05,-0.015);
         Eigen::Quaterniond object_to_grasp_orientation_transform = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI/2,Eigen::Vector3d::UnitY()));
-        Eigen::Vector3d grasp_to_via_point_position_transform = Eigen::Vector3d(0.0,0.0,-0.10);
+        Eigen::Vector3d grasp_to_via_point_position_transform = Eigen::Vector3d(0.0,0.0,-0.06);
         // via point speed 
         double via_point_speed = 0.1; //ms-1
 
