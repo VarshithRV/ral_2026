@@ -136,9 +136,12 @@ class Handover
             const Eigen::Vector3d& previous_velocity,
             double dt
         );
-        void gripper_on();
-        void gripper_off();
-        void gripper_neutral();
+        void left_gripper_on();
+        void left_gripper_off();
+        void left_gripper_neutral();
+        void right_gripper_on();
+        void right_gripper_off();
+        void right_gripper_neutral();
 };
 
 #endif
