@@ -44,7 +44,7 @@ bool Handover::handover()
         dual_arm_control_interface_->right_move_group_interface_
     );
 
-    left_gripper_off();
+    right_gripper_off();
 
     std::cout<<"preparing servo"<<std::endl;
     ee_servo_handle_->prepare_servo_();
@@ -78,7 +78,7 @@ bool Handover::handover()
     // grasp
     MPC_go_to_state(1.0,freeze_grasp_position,zero_velocity,freeze_grasp_orientation);
     RCLCPP_INFO(LOGGER,"Graaaaaasp!!");
-    left_gripper_on();
+    right_gripper_on();
     std::this_thread::sleep_for(0.5s);
     
     std::cout<<"Stopping servo now"<<std::endl;
@@ -525,64 +525,10 @@ Eigen::Vector3d Handover::k(Eigen::Vector3d vel_setpoint){ // function over velo
     return vel_setpoint;
 }
 
-void Handover::left_gripper_on(){
-    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-}
-
-void Handover::left_gripper_off(){
-    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-}
-
-void Handover::left_gripper_neutral(){
-    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-}
-
-
-
 void Handover::right_gripper_on(){
     auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
     gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
     dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
@@ -598,11 +544,7 @@ void Handover::right_gripper_on(){
 void Handover::right_gripper_off(){
     auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
     gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
     dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
@@ -618,11 +560,7 @@ void Handover::right_gripper_off(){
 void Handover::right_gripper_neutral(){
     auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
-    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
-    dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
-    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
-    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT5;
     gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
     dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
     gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
@@ -633,4 +571,65 @@ void Handover::right_gripper_neutral(){
     gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
     gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
     dual_arm_control_interface_->right_set_io_client_->async_send_request(gripper_on_msg1);
+}
+
+
+void Handover::left_gripper_on(){
+    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+}
+
+void Handover::left_gripper_off(){
+    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_ON;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+}
+
+void Handover::left_gripper_neutral(){
+    auto gripper_on_msg1 = std::make_shared<ur_msgs::srv::SetIO::Request>();
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT2;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT3;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT6;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
+    gripper_on_msg1->fun = gripper_on_msg1->FUN_SET_DIGITAL_OUT;
+    gripper_on_msg1->pin = gripper_on_msg1->PIN_CONF_OUT7;
+    gripper_on_msg1->state = gripper_on_msg1->STATE_OFF;
+    dual_arm_control_interface_->left_set_io_client_->async_send_request(gripper_on_msg1);
 }
