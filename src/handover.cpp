@@ -262,7 +262,8 @@ bool Handover::handover()
 
     dual_arm_control_interface_->block_till_response_execute_cubic_trajectory(left_after_placing_object, 10s);
     left_gripper_neutral();
-
+    right_gripper_neutral();
+    
     // move to left preaction states
     dual_arm_control_interface_->move_to_joint_positions(
         std::vector<double>{
