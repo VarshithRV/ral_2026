@@ -98,6 +98,9 @@ add_executable(human_to_robot_handover
 src/human_to_robot_handover.cpp
 src/object_state_estimation.cpp
 src/cubic_polynomial_solver.cpp
+src/gripper_functions.cpp
+src/mpc_solver.cpp
+src/handover_phases.cpp
 src/handover.cpp
 )
 ament_target_dependencies(human_to_robot_handover ${THIS_PACKAGE_INCLUDE_DEPENDS})
