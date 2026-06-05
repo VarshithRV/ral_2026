@@ -113,9 +113,6 @@ class Handover
         Eigen::Vector3d get_linear_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
         Eigen::Vector3d get_angular_vel(Eigen::Quaterniond setpoint, Eigen::Quaterniond current);
         void get_ee_linear_vel();
-        double f(double duration,int n, double delta_t); // function over traj duration
-        double g(double delta_t); // function over velocity inference instant
-        Eigen::Vector3d k(Eigen::Vector3d vel_setpoint); // function over output velocity
         
         Eigen::Vector3d previous_velocity_command = Eigen::Vector3d::Zero();
         
