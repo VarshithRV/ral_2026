@@ -188,51 +188,6 @@ def launch_setup(context, *args, **kwargs):
 
     #### nodes
 
-    # left_preaction_server = Node(
-    #     package="motion_planning_abstractions",
-    #     executable="predefined_state_server",
-    #     name="left_preaction_server",
-    #     output="screen",
-    #     parameters=[
-    #         robot_description,
-    #         robot_description_semantic,
-    #         robot_description_kinematics,
-    #         {
-    #             "planning_group": "left_ur16e",
-    #             "shoulder_pan": 0.15949875079531686,
-    #             "shoulder_lift": -1.2477428991054431,
-    #             "elbow": -1.9956972244574434,
-    #             "wrist_1": -3.077024939621932,
-    #             "wrist_2": -1.4171686983532517,
-    #             "wrist_3": 0.07695608771623892,
-    #             "side": "left",
-    #         },
-    #         {"use_sim_time": use_sim_time},
-    #     ],
-    # )
-
-    # right_preaction_server = Node(
-    #     package="motion_planning_abstractions",
-    #     executable="predefined_state_server",
-    #     name="right_preaction_server",
-    #     output="screen",
-    #     parameters=[
-    #         robot_description,
-    #         robot_description_semantic,
-    #         robot_description_kinematics,
-    #         {
-    #             "planning_group": "right_ur16e",
-    #             "shoulder_pan": -3.2785912195788782,
-    #             "shoulder_lift": -1.6929518185057582,
-    #             "elbow": 2.1487663427936,
-    #             "wrist_1": -2.3819247684874476,
-    #             "wrist_2": -2.7175918261157435,
-    #             "wrist_3": 1.8448426723480225,
-    #             "side": "right",
-    #         },
-    #         {"use_sim_time": use_sim_time},
-    #     ],
-    # )
     left_preaction_server = Node(
         package="motion_planning_abstractions",
         executable="predefined_state_server",
@@ -368,10 +323,24 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    serial_float_publisher = Node(
+        package="ral_2026",
+        executable="float_array_character_device_driver",
+        name="float_array_character_device_driver",
+        output="screen",
+        parameters=[
+            {
+                "device_name": "/dev/ttyACM1",
+                "channels": 2,
+            }
+        ],
+    )
+
     nodes_to_start = [
         left_preaction_server,
         right_preaction_server,
         apriltag_grid_detector,
+        serial_float_publisher,
         handover_node,
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
