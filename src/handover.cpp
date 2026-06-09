@@ -132,7 +132,7 @@ bool Handover::handover()
     geometry_msgs::msg::Pose left_handover_via_point_pose,left_handover_pose;
     
     left_handover_via_point_pose.position.x = -0.20;
-    left_handover_via_point_pose.position.y = 0.05;
+    left_handover_via_point_pose.position.y = 0.0;
     left_handover_via_point_pose.position.z = 0.218;
     left_handover_via_point_pose.orientation.w = 0.7071;
     left_handover_via_point_pose.orientation.x = 0.0;
