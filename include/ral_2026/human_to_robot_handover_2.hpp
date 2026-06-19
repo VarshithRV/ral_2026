@@ -87,9 +87,9 @@ class Handover
         // state window size
         int state_window_size = 5;
         // object to grasp transform
-        Eigen::Vector3d object_to_grasp_position_transform = Eigen::Vector3d(-0.03,-0.05,-0.015);
+        Eigen::Vector3d object_to_grasp_position_transform = Eigen::Vector3d(0.03,0.0,-0.03);
         Eigen::Quaterniond object_to_grasp_orientation_transform = Eigen::Quaterniond(Eigen::AngleAxisd(M_PI/2,Eigen::Vector3d::UnitY()));
-        Eigen::Vector3d grasp_to_via_point_position_transform = Eigen::Vector3d(0.0,0.0,-0.06);
+        Eigen::Vector3d grasp_to_via_point_position_transform = Eigen::Vector3d(0.0,0.0,-0.17);
         // via point speed 
         double via_point_speed = 0.1; //ms-1
 
@@ -113,6 +113,9 @@ class Handover
         Eigen::Vector3d get_linear_vel_from_coeffs(Eigen::Matrix<double,4,3>coeff_matrix, double tau);
         Eigen::Vector3d get_angular_vel(Eigen::Quaterniond setpoint, Eigen::Quaterniond current);
         void get_ee_linear_vel();
+        double f(double duration,int n, double delta_t); // function over traj duration
+        double g(double delta_t); // function over velocity inference instant
+        Eigen::Vector3d k(Eigen::Vector3d vel_setpoint); // function over output velocity
         
         Eigen::Vector3d previous_velocity_command = Eigen::Vector3d::Zero();
         

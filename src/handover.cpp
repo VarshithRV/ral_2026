@@ -47,8 +47,10 @@ bool Handover::handover()
     right_gripper_off();
 
     std::cout<<"preparing servo"<<std::endl;
+    std::this_thread::sleep_for(0.5s);
     ee_servo_handle_->prepare_servo_();
     std::cout<<"starting servo"<< std::endl;
+    std::this_thread::sleep_for(0.5s);
     ee_servo_handle_->start_servo_();
     std::cout<<"ready to move"<<std::endl;
 

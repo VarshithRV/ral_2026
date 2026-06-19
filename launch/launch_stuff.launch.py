@@ -311,6 +311,25 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    handover_node_2 = Node(
+        package="ral_2026",
+        executable="human_to_robot_handover_2",
+        name="human_to_robot_handover_2",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {"use_sim_time": use_sim_time},
+            {
+                "servo_node_ns": "/right_servo_node_main",
+                "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                "joint_vel_controller": "right_forward_velocity_controller",
+                "alpha":0.8,
+            }
+        ],
+    )
+
     left_task_space_cubic_polynomial_trajectory_server = Node(
         package="motion_planning_abstractions",
         executable="task_space_cubic_polynomial_trajectory_server",
@@ -362,6 +381,7 @@ def launch_setup(context, *args, **kwargs):
         right_preaction_server,
         apriltag_grid_detector,
         handover_node,
+        handover_node_2,
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
     ]
