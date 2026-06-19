@@ -98,6 +98,9 @@ add_executable(human_to_robot_handover
 src/human_to_robot_handover.cpp
 src/object_state_estimation.cpp
 src/cubic_polynomial_solver.cpp
+src/gripper_functions.cpp
+src/mpc_solver.cpp
+src/handover_phases.cpp
 src/handover.cpp
 )
 ament_target_dependencies(human_to_robot_handover ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -109,15 +112,19 @@ human_to_robot_handover
 DESTINATION lib/${PROJECT_NAME}
 )
 
-add_executable(float_array_character_device_driver 
-src/float_array_character_device_driver.cpp
+add_executable(human_to_robot_handover_2 
+src/human_to_robot_handover_2.cpp
+src/object_state_estimation_2.cpp
+src/cubic_polynomial_solver_2.cpp
+src/handover_2.cpp
+src/gripper_functions_2.cpp
 )
-ament_target_dependencies(float_array_character_device_driver ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_include_directories(float_array_character_device_driver PUBLIC
+ament_target_dependencies(human_to_robot_handover_2 ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_include_directories(human_to_robot_handover_2 PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 install(TARGETS
-float_array_character_device_driver
+human_to_robot_handover_2
 DESTINATION lib/${PROJECT_NAME}
 )
 

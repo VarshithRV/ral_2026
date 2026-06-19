@@ -102,6 +102,24 @@ def launch_setup(context, *args, **kwargs):
             "left_tool0_z:=",
             left_tool0_z,
             " ",
+            "left_translation_x:=",
+            "-0.577",
+            " ",
+            "left_translation_y:=",
+            "0.529",
+            " ",
+            "left_translation_z:=",
+            "0.0",
+            " ",
+            "left_rotation_r:=",
+            "0.0",
+            " ",
+            "left_rotation_p:=",
+            "0.0",
+            " ",
+            "left_rotation_y:=",
+            "1.5707",
+            " ",
             "right_robot_ip:=xxx.yyy.zzz.www",
             " ",
             "right_tf_prefix:=right_",
@@ -148,6 +166,23 @@ def launch_setup(context, *args, **kwargs):
             "right_tool0_z:=",
             right_tool0_z,
             " ",
+            "right_translation_x:=",
+            "0.577",
+            " ",
+            "right_translation_y:=",
+            "0.529",
+            " ",
+            "right_translation_z:=",
+            "0.0",
+            " ",
+            "right_rotation_r:=",
+            "0.0",
+            " ",
+            "right_rotation_p:=",
+            "0.0",
+            " ",
+            "right_rotation_y:=",
+            "1.5707",
         ]
     )
 
@@ -187,7 +222,6 @@ def launch_setup(context, *args, **kwargs):
     }}
 
     #### nodes
-
     left_preaction_server = Node(
         package="motion_planning_abstractions",
         executable="predefined_state_server",
@@ -222,12 +256,12 @@ def launch_setup(context, *args, **kwargs):
             robot_description_kinematics,
             {
                 "planning_group": "right_ur16e",
-                "shoulder_pan": 0.15949875079531686,
-                "shoulder_lift": -1.2477428991054431,
-                "elbow": -1.9956972244574434,
-                "wrist_1": -3.077024939621932,
-                "wrist_2": -1.4171686983532517,
-                "wrist_3": 0.07695608771623892,
+                "shoulder_pan": 0.15968317804148882,
+                "shoulder_lift": -1.247802739692411,
+                "elbow": -1.9956461569496642,
+                "wrist_1": -1.1175868831372546,
+                "wrist_2": 1.5685058669109873,
+                "wrist_3": -2.958524343639371,
                 "side": "right",
             },
             {"use_sim_time": use_sim_time},
@@ -262,6 +296,25 @@ def launch_setup(context, *args, **kwargs):
         package="ral_2026",
         executable="human_to_robot_handover",
         name="human_to_robot_handover",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {"use_sim_time": use_sim_time},
+            {
+                "servo_node_ns": "/right_servo_node_main",
+                "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                "joint_vel_controller": "right_forward_velocity_controller",
+                "alpha":0.8,
+            }
+        ],
+    )
+
+    handover_node_2 = Node(
+        package="ral_2026",
+        executable="human_to_robot_handover_2",
+        name="human_to_robot_handover_2",
         output="screen",
         parameters=[
             robot_description,
@@ -342,6 +395,7 @@ def launch_setup(context, *args, **kwargs):
         apriltag_grid_detector,
         serial_float_publisher,
         handover_node,
+        handover_node_2,
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
     ]
