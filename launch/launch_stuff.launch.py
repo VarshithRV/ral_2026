@@ -276,7 +276,7 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         parameters=[
             {
-                "alpha": 0.25,
+                "alpha": 0.9,
                 "marker_separation": 4.7,  # mm
                 "marker_size": 27.84,        # mm
                 "object.name": "object0",
