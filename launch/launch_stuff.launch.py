@@ -305,6 +305,8 @@ def launch_setup(context, *args, **kwargs):
             {
                 "servo_node_ns": "/right_servo_node_main",
                 "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_forward_position_controller",
                 "joint_vel_controller": "right_forward_velocity_controller",
                 "alpha":0.8,
             }
@@ -324,6 +326,8 @@ def launch_setup(context, *args, **kwargs):
             {
                 "servo_node_ns": "/right_servo_node_main",
                 "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_forward_position_controller",
                 "joint_vel_controller": "right_forward_velocity_controller",
                 "alpha":0.8,
             }
