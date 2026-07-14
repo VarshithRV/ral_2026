@@ -14,9 +14,6 @@ def round_to_unit_cells(
 ) -> tuple[int, float]:
     """
     Round a requested dimension to the nearest integer number of unit cells.
-
-    Python's built-in round() uses banker's rounding, so floor(x + 0.5)
-    is used here for conventional nearest-integer rounding.
     """
     number_of_cells = max(
         1,
@@ -50,7 +47,7 @@ def cylinder_between_points(
         sections=sections,
     )
 
-    # trimesh cylinders are initially aligned with the local Z axis.
+    # Trimesh cylinders are initially aligned with the local Z axis.
     transform = trimesh.geometry.align_vectors(
         np.array([0.0, 0.0, 1.0]),
         direction / length,
@@ -62,19 +59,28 @@ def cylinder_between_points(
     return beam
 
 
-def create_bcc_lattice(
+def create_bcc_lattice_with_sheets(
     requested_dimensions: tuple[float, float, float],
     unit_cell_length: float,
     beam_diameter: float,
+    sheet_thickness: float,
+    sheet_extra_size: float,
     cylinder_sections: int = 16,
     add_node_spheres: bool = True,
     node_diameter: float | None = None,
-) -> tuple[trimesh.Trimesh, tuple[float, float, float], tuple[int, int, int]]:
+) -> tuple[
+    trimesh.Trimesh,
+    tuple[float, float, float],
+    tuple[int, int, int],
+]:
     """
-    Generate a repeated BCC lattice.
+    Generate a repeated BCC lattice with top and bottom sheets.
 
-    Each cell contains eight beams connecting the cell center to its
-    eight corners.
+    Each BCC cell contains eight beams connecting the center of the cell
+    to its eight corners.
+
+    The sheets are centered relative to the lattice and extend beyond the
+    lattice by sheet_extra_size overall in both X and Y.
 
     All dimensions are in millimetres.
     """
@@ -86,8 +92,14 @@ def create_bcc_lattice(
 
     if beam_diameter >= unit_cell_length:
         raise ValueError(
-            "Beam diameter should be smaller than the unit-cell length."
+            "Beam diameter must be smaller than the unit-cell length."
         )
+
+    if sheet_thickness <= 0:
+        raise ValueError("Sheet thickness must be greater than zero.")
+
+    if sheet_extra_size < 0:
+        raise ValueError("Sheet extra size cannot be negative.")
 
     cell_counts = []
     actual_dimensions = []
@@ -105,6 +117,7 @@ def create_bcc_lattice(
         actual_dimensions.append(actual_length)
 
     nx, ny, nz = cell_counts
+    lattice_x, lattice_y, lattice_z = actual_dimensions
 
     meshes: list[trimesh.Trimesh] = []
 
@@ -172,18 +185,61 @@ def create_bcc_lattice(
             sphere.apply_translation(np.asarray(position))
             meshes.append(sphere)
 
-    lattice = trimesh.util.concatenate(meshes)
+    # Sheet dimensions are larger than the lattice in X and Y.
+    sheet_x = lattice_x + sheet_extra_size
+    sheet_y = lattice_y + sheet_extra_size
 
-    # Move the complete lattice so that it is centered at the origin.
-    actual_dimensions_array = np.asarray(actual_dimensions)
-    lattice.apply_translation(-actual_dimensions_array / 2.0)
+    bottom_sheet = trimesh.creation.box(
+        extents=[sheet_x, sheet_y, sheet_thickness]
+    )
 
-    # Remove duplicate and unused mesh data where possible.
-    lattice.merge_vertices()
-    lattice.remove_unreferenced_vertices()
+    top_sheet = trimesh.creation.box(
+        extents=[sheet_x, sheet_y, sheet_thickness]
+    )
+
+    # The lattice currently occupies:
+    # X: 0 to lattice_x
+    # Y: 0 to lattice_y
+    # Z: 0 to lattice_z
+    #
+    # Place the sheets directly below and above the lattice.
+    bottom_sheet.apply_translation(
+        [
+            lattice_x / 2.0,
+            lattice_y / 2.0,
+            -sheet_thickness / 2.0,
+        ]
+    )
+
+    top_sheet.apply_translation(
+        [
+            lattice_x / 2.0,
+            lattice_y / 2.0,
+            lattice_z + sheet_thickness / 2.0,
+        ]
+    )
+
+    meshes.append(bottom_sheet)
+    meshes.append(top_sheet)
+
+    complete_part = trimesh.util.concatenate(meshes)
+
+    # Center the complete part, including sheets, at the origin.
+    total_z = lattice_z + 2.0 * sheet_thickness
+
+    complete_part.apply_translation(
+        [
+            -lattice_x / 2.0,
+            -lattice_y / 2.0,
+            -lattice_z / 2.0,
+        ]
+    )
+
+    complete_part.merge_vertices()
+    complete_part.remove_unreferenced_vertices()
 
     return (
-        lattice,
+        complete_part,
         tuple(actual_dimensions),
         tuple(cell_counts),
     )
@@ -191,28 +247,30 @@ def create_bcc_lattice(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate a body-centered cubic lattice STL."
+        description=(
+            "Generate a BCC lattice STL with top and bottom sheets."
+        )
     )
 
     parser.add_argument(
         "--length-x",
         type=float,
         default=30.0,
-        help="Requested X dimension in mm. Default: 30",
+        help="Requested lattice X dimension in mm. Default: 30",
     )
 
     parser.add_argument(
         "--length-y",
         type=float,
         default=30.0,
-        help="Requested Y dimension in mm. Default: 30",
+        help="Requested lattice Y dimension in mm. Default: 30",
     )
 
     parser.add_argument(
         "--length-z",
         type=float,
         default=30.0,
-        help="Requested Z dimension in mm. Default: 30",
+        help="Requested lattice Z dimension in mm. Default: 30",
     )
 
     parser.add_argument(
@@ -227,6 +285,24 @@ def main() -> None:
         type=float,
         default=1.0,
         help="Beam diameter in mm. Default: 1",
+    )
+
+    parser.add_argument(
+        "--sheet-thickness",
+        type=float,
+        default=0.5,
+        help="Top and bottom sheet thickness in mm. Default: 0.5",
+    )
+
+    parser.add_argument(
+        "--sheet-extra-size",
+        type=float,
+        default=1.0,
+        help=(
+            "Amount added to the total sheet length and width in mm. "
+            "A value of 1 gives a 0.5 mm overhang on each side. "
+            "Default: 1"
+        ),
     )
 
     parser.add_argument(
@@ -255,8 +331,11 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("bcc_lattice.stl"),
-        help="Output STL filename. Default: bcc_lattice.stl",
+        default=Path("bcc_lattice_with_sheets.stl"),
+        help=(
+            "Output STL filename. "
+            "Default: bcc_lattice_with_sheets.stl"
+        ),
     )
 
     args = parser.parse_args()
@@ -270,40 +349,69 @@ def main() -> None:
         args.length_z,
     )
 
-    lattice, actual_dimensions, cell_counts = create_bcc_lattice(
-        requested_dimensions=requested_dimensions,
-        unit_cell_length=args.cell_size,
-        beam_diameter=args.beam_diameter,
-        cylinder_sections=args.sections,
-        add_node_spheres=not args.no_node_spheres,
-        node_diameter=args.node_diameter,
+    complete_part, actual_dimensions, cell_counts = (
+        create_bcc_lattice_with_sheets(
+            requested_dimensions=requested_dimensions,
+            unit_cell_length=args.cell_size,
+            beam_diameter=args.beam_diameter,
+            sheet_thickness=args.sheet_thickness,
+            sheet_extra_size=args.sheet_extra_size,
+            cylinder_sections=args.sections,
+            add_node_spheres=not args.no_node_spheres,
+            node_diameter=args.node_diameter,
+        )
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    lattice.export(args.output)
+    complete_part.export(args.output)
+
+    sheet_x = actual_dimensions[0] + args.sheet_extra_size
+    sheet_y = actual_dimensions[1] + args.sheet_extra_size
+
+    total_height = (
+        actual_dimensions[2] + 2.0 * args.sheet_thickness
+    )
 
     print(f"STL written to: {args.output}")
+
     print(
-        "Requested dimensions: "
+        "Requested lattice dimensions: "
         f"{requested_dimensions[0]:.3f} × "
         f"{requested_dimensions[1]:.3f} × "
         f"{requested_dimensions[2]:.3f} mm"
     )
+
     print(
-        "Actual dimensions:    "
+        "Actual lattice dimensions:    "
         f"{actual_dimensions[0]:.3f} × "
         f"{actual_dimensions[1]:.3f} × "
         f"{actual_dimensions[2]:.3f} mm"
     )
+
     print(
-        "Unit-cell counts:     "
+        "Unit-cell counts:             "
         f"{cell_counts[0]} × "
         f"{cell_counts[1]} × "
         f"{cell_counts[2]}"
     )
-    print(f"Beam diameter:       {args.beam_diameter:.3f} mm")
-    print(f"Vertices:            {len(lattice.vertices)}")
-    print(f"Faces:               {len(lattice.faces)}")
+
+    print(
+        "Sheet dimensions:             "
+        f"{sheet_x:.3f} × "
+        f"{sheet_y:.3f} × "
+        f"{args.sheet_thickness:.3f} mm"
+    )
+
+    print(
+        "Complete external dimensions: "
+        f"{sheet_x:.3f} × "
+        f"{sheet_y:.3f} × "
+        f"{total_height:.3f} mm"
+    )
+
+    print(f"Beam diameter:                 {args.beam_diameter:.3f} mm")
+    print(f"Vertices:                      {len(complete_part.vertices)}")
+    print(f"Faces:                         {len(complete_part.faces)}")
 
 
 if __name__ == "__main__":
