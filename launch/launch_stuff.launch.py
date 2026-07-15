@@ -383,8 +383,8 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         parameters=[
             {
-                "device_name": "/dev/ttyACM1",
-                "channels": 2,
+                "device_name": "/dev/ttyACM0",
+                "channels": 8,
             }
         ],
     )
