@@ -112,6 +112,18 @@ human_to_robot_handover
 DESTINATION lib/${PROJECT_NAME}
 )
 
+add_executable(float_array_character_device_driver
+src/float_array_character_device_driver.cpp
+)
+ament_target_dependencies(float_array_character_device_driver ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_include_directories(float_array_character_device_driver PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+install(TARGETS
+float_array_character_device_driver
+DESTINATION lib/${PROJECT_NAME}
+)
+
 add_executable(human_to_robot_handover_2 
 src/human_to_robot_handover_2.cpp
 src/object_state_estimation_2.cpp

@@ -53,8 +53,8 @@ private:
             return;
         }
 
-        cfsetispeed(&tty, B9600);
-        cfsetospeed(&tty, B9600);
+        cfsetispeed(&tty, B115200);
+        cfsetospeed(&tty, B115200);
 
         tty.c_cflag |= CLOCAL | CREAD;
         tty.c_cflag &= ~CSIZE;
@@ -73,7 +73,7 @@ private:
         tcflush(fd_, TCIFLUSH);
         tcsetattr(fd_, TCSANOW, &tty);
 
-        RCLCPP_INFO(get_logger(), "Opened serial device %s at 9600 baud", device_name_.c_str());
+        RCLCPP_INFO(get_logger(), "Opened serial device %s at 115200 baud", device_name_.c_str());
     }
 
     bool parse_line(const std::string & line, std::vector<float> & values)
