@@ -26,5 +26,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect((UR_IP, UR_PORT))
 sock.send(script.encode('utf-8'))
 
+
+
 time.sleep(2)  # replace with your idle-detection / RT speed polling for real use
 sock.close
