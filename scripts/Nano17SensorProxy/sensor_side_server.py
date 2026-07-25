@@ -30,7 +30,6 @@ class Server:
                         time.sleep(0.01)
                         try:
                             data = [self.read_ft_value(),time.time()]
-                            print(data)
                             stream = json.dumps(data)
                             stream += "\n"
                             self.c.send(stream.encode())
