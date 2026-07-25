@@ -13,12 +13,12 @@ class Client(Node):
         self.s = socket.socket(family=socket.AF_INET,type=socket.SOCK_STREAM)
         print("Socket initialized")
         self.port = 9999
-        self.publisher_ = self.create_publisher(Float64MultiArray, '~/fz', 10)
+        self.publisher_ = self.create_publisher(Float64MultiArray, '~/ft', 10)
         pass
 
     def connect(self):
-        self.s.bind(('localhost',10000))
-        self.s.connect(('localhost',self.port))
+        self.s.bind(('192.168.1.5',10000))
+        self.s.connect(('192.168.1.6',self.port))
         print("socket connected")
 
     def recv(self):
