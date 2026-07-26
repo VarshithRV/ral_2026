@@ -4,6 +4,8 @@ import socket
 import threading
 import json
 import math
+import nidaqmx
+import numpy as np
 
 class Server:
     def __init__(self):
@@ -12,10 +14,29 @@ class Server:
         print("Socket initialized")
         self.port = 9999
         print("Binding socket")
-        self.s.bind(('localhost',self.port))
+        self.s.bind(('192.168.1.6',self.port))
         print(f"Socket bound to port {self.port}")
         print("Listening for connections now")
         self.s.listen(5)
+
+        self.task = nidaqmx.Task()
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai1")
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai2")
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai4")
+        self.task.ai_channels.add_ai_voltage_chan("Dev1/ai5")
+
+        self.cal_matrix = np.array([
+            [ 0.006508136168,  0.004737349693, -0.039684981108, -1.643620133400,  0.018618559465,   1.690829515457],
+            [-0.003218212631,  2.016800165176, -0.019988993183, -0.947898804539, -0.015476017259,  -0.999974071980],
+            [ 1.851384401321,  0.053954269737,  1.880571126938,  0.067106232047,  1.906236290932,   0.054224062711],
+            [-0.014561751857, 23.761793136597, 10.570952415466, -10.716448783875, -10.798959732056, -12.132943153381],
+            [-11.938018798828, -0.492411583662,  6.568276405334, 19.510540008545,  6.146337985992, -19.568044662476],
+            [-0.037593655288,  7.526563644409,  0.112936601043,  7.675779342651,  0.109928734601,   7.442779064178]
+        ], dtype=np.float64)
+
+        self.bias = np.dot(self.cal_matrix,np.array(self.task.read()))
         pass
 
     def keep_waiting_for_connection(self):
@@ -27,26 +48,30 @@ class Server:
                 print(f"Got connection from {self.addr}")
 
                 while True:
-                        time.sleep(0.01)
-                        try:
-                            data = [self.read_ft_value(),time.time()]
-                            stream = json.dumps(data)
-                            stream += "\n"
-                            self.c.send(stream.encode())
-                        except BrokenPipeError:
-                            print("Client Socket appears closed")
-                            print(f"Client socket fd : {self.c.fileno()}")
-                            break
-
+                        # try:
+                        data = self.read_ft_value()
+                        data.insert(0,time.time())
+                        stream = json.dumps(data)
+                        stream += "\n"
+                        self.c.send(stream.encode())
+                        # except BrokenPipeError or ConnectionAbortedError:
+                        #     print("Client Socket appears closed")
+                        #     print(f"Client socket fd : {self.c.fileno()}")
+                        #     break
             except KeyboardInterrupt:
+
                 print("Interrupted, exit")
                 self.c.close()
                 self.s.close()
                 sys.exit()
 
     # replace function to read the ft data
-    def read_ft_value(self)->float:
-        return 3.0*math.sin(time.time())
+    def read_ft_value(self):
+        input_voltages = self.task.read()
+        signal_vector = np.array(input_voltages,dtype=float)
+        ft_data=np.dot(self.cal_matrix,signal_vector)
+        ft_data -= self.bias
+        return ft_data.tolist()
 
 if __name__ == "__main__":
     server = Server()
