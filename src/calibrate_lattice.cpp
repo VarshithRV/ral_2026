@@ -32,14 +32,14 @@ int main(int argc, char** argv){
     (std_srvs::srv::Trigger_Request::SharedPtr req, std_srvs::srv::Trigger_Response::SharedPtr res)
     {
         auto start_pose = *(dual_arm_control_interface->get_current_ee_pose("left"));
-        int n = 10; // number of steps
+        int n = 7; // number of steps
         double step_size = 0.001; // length of each step in m
-        auto wait_duration = 5s;
+        auto wait_duration = 1s;
 
         geometry_msgs::msg::Pose setp(start_pose);
 
         for(int i=0; i<n; i++){
-            setp.position.z -= (i+1)*step_size;
+            setp.position.z -= step_size;
             auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
                 std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{2.5},0.3,0.0,"left"
             );
@@ -47,7 +47,7 @@ int main(int argc, char** argv){
         }
 
         for(int i=0; i<n; i++){
-            setp.position.z += (i+1)*step_size;
+            setp.position.z += step_size;
             auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
                 std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{2.5},0.3,0.0,"left"
             );
