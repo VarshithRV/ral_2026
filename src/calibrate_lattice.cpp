@@ -34,11 +34,11 @@ int main(int argc, char** argv){
         auto start_pose = *(dual_arm_control_interface->get_current_ee_pose("left"));
         
         std::vector<double> step_sizes{0.001,0.0015,0.003};
-        std::vector<double> movement_durations{0.5,1,2,3};
-        std::vectors<int> stepss{9,6,3};
+        std::vector<double> movement_durations{0.5,0.6,0.7};
+        std::vector<int> stepss{9,6,3};
         auto wait_duration = 3s;
 
-        auto sub_calibration = [wait_duration](int steps, double step_size, double movement_duration ){
+        auto sub_calibration = [wait_duration,dual_arm_control_interface,start_pose](int steps, double step_size, double movement_duration ){
             geometry_msgs::msg::Pose setp(start_pose);
     
             for(int i=0; i<steps; i++){
@@ -49,7 +49,7 @@ int main(int argc, char** argv){
                 std::this_thread::sleep_for(wait_duration);
             }
     
-            for(int i=0; i<n; i++){
+            for(int i=0; i<steps; i++){
                 setp.position.z += step_size;
                 auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
                     std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{movement_duration},0.3,0.0,"left"
@@ -61,12 +61,16 @@ int main(int argc, char** argv){
         for(int i=0; i<3; i++){
             double step_size = step_sizes[i];
             double steps = stepss[i];
-            RCLCPP_INFO(node->get_logger(),"Calibration for step_size : %f, steps: %f\n",step_size,steps);
-            for(int j = 0; j<4; j++){
-
+            for(int j = 0; j<3; j++){
+                
                 sub_calibration(steps,step_size,movement_durations[j]);
                 RCLCPP_INFO(node->get_logger(),"Movement duration : ",movement_durations[j]);
+                RCLCPP_INFO(node->get_logger(), "################################################################################################################################");
+                std::this_thread::sleep_for(10s);
             }
+            std::this_thread::sleep_for(0.5s);
+            RCLCPP_INFO(node->get_logger(), "################################################################################################################################");
+            RCLCPP_INFO(node->get_logger(),"Calibration for step_size : %f, steps: %f\n",step_size,steps);
             std::this_thread::sleep_for(10s);
         }
 
