@@ -276,7 +276,7 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         parameters=[
             {
-                "alpha": 0.25,
+                "alpha": 0.9,
                 "marker_separation": 4.7,  # mm
                 "marker_size": 27.84,        # mm
                 "object.name": "object0",
@@ -305,6 +305,8 @@ def launch_setup(context, *args, **kwargs):
             {
                 "servo_node_ns": "/right_servo_node_main",
                 "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_forward_position_controller",
                 "joint_vel_controller": "right_forward_velocity_controller",
                 "alpha":0.8,
             }
@@ -324,6 +326,8 @@ def launch_setup(context, *args, **kwargs):
             {
                 "servo_node_ns": "/right_servo_node_main",
                 "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_scaled_joint_trajectory_controller",
+                # "joint_vel_controller": "right_forward_position_controller",
                 "joint_vel_controller": "right_forward_velocity_controller",
                 "alpha":0.8,
             }

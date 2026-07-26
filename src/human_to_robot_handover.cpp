@@ -29,6 +29,8 @@ Handover::Handover(rclcpp::Node::SharedPtr node){
     
     // servo and dual arm control inits
     ee_servo_handle_ = std::make_shared<EEServo>(node_);
+    std::this_thread::sleep_for(0.5s);
+    ee_servo_handle_->initialize_servo_interface_();
     dual_arm_control_interface_ = std::make_shared<DualArmControlInterface>(node_);
     
     // callback groups
