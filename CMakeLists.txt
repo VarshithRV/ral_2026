@@ -112,6 +112,18 @@ human_to_robot_handover
 DESTINATION lib/${PROJECT_NAME}
 )
 
+add_executable(calibrate_lattice
+src/calibrate_lattice.cpp
+)
+ament_target_dependencies(calibrate_lattice ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_include_directories(calibrate_lattice PUBLIC
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+install(TARGETS
+calibrate_lattice
+DESTINATION lib/${PROJECT_NAME}
+)
+
 add_executable(float_array_character_device_driver
 src/float_array_character_device_driver.cpp
 )

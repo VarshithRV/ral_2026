@@ -330,6 +330,25 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
+    calibrate_lattice_node = Node(
+        package="ral_2026",
+        executable="calibrate_lattice",
+        name="calibrate_lattice",
+        output="screen",
+        parameters=[
+            robot_description,
+            robot_description_semantic,
+            robot_description_kinematics,
+            {"use_sim_time": use_sim_time},
+            {
+                "servo_node_ns": "/right_servo_node_main",
+                "joint_traj_controller": "right_scaled_joint_trajectory_controller",
+                "joint_vel_controller": "right_forward_velocity_controller",
+                "alpha":0.8,
+            }
+        ],
+    )
+
     left_task_space_cubic_polynomial_trajectory_server = Node(
         package="motion_planning_abstractions",
         executable="task_space_cubic_polynomial_trajectory_server",
@@ -393,11 +412,12 @@ def launch_setup(context, *args, **kwargs):
         # left_preaction_server,
         # right_preaction_server,
         # apriltag_grid_detector,
-        serial_float_publisher,
         # handover_node,
         # handover_node_2,
-        # left_task_space_cubic_polynomial_trajectory_server,
-        # right_task_space_cubic_polynomial_trajectory_server,
+        left_task_space_cubic_polynomial_trajectory_server,
+        right_task_space_cubic_polynomial_trajectory_server,
+        # serial_float_publisher,
+        calibrate_lattice_node
     ]
     
     return nodes_to_start
