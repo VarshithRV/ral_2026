@@ -18,7 +18,7 @@ class Client(Node):
 
     def connect(self):
         self.s.bind(('192.168.1.5',10000))
-        self.s.connect(('192.168.1.6',self.port))
+        self.s.connect(('192.168.1.7',self.port))
         print("socket connected")
 
     def recv(self):

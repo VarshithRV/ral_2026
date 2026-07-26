@@ -28,37 +28,54 @@ int main(int argc, char** argv){
     auto dual_arm_control_interface  = std::make_shared<DualArmControlInterface>(node);
 
     auto step_input_callback = 
-    [dual_arm_control_interface]
+    [dual_arm_control_interface,node]
     (std_srvs::srv::Trigger_Request::SharedPtr req, std_srvs::srv::Trigger_Response::SharedPtr res)
     {
         auto start_pose = *(dual_arm_control_interface->get_current_ee_pose("left"));
-        int n = 7; // number of steps
-        double step_size = 0.001; // length of each step in m
-        auto wait_duration = 5s;
-        auto movement_duration = 0.1; // duration of the step movement in seconds
+        
+        std::vector<double> step_sizes{0.001,0.0015,0.003};
+        std::vector<double> movement_durations{0.5,1,2,3};
+        std::vectors<int> stepss{9,6,3};
+        auto wait_duration = 3s;
 
-        geometry_msgs::msg::Pose setp(start_pose);
+        auto sub_calibration = [wait_duration](int steps, double step_size, double movement_duration ){
+            geometry_msgs::msg::Pose setp(start_pose);
+    
+            for(int i=0; i<steps; i++){
+                setp.position.z -= step_size;
+                auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
+                    std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{movement_duration},0.3,0.0,"left"
+                );
+                std::this_thread::sleep_for(wait_duration);
+            }
+    
+            for(int i=0; i<n; i++){
+                setp.position.z += step_size;
+                auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
+                    std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{movement_duration},0.3,0.0,"left"
+                );
+                std::this_thread::sleep_for(wait_duration);
+            }
+        };
 
-        for(int i=0; i<n; i++){
-            setp.position.z -= step_size;
-            auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
-                std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{movement_duration},0.3,0.0,"left"
-            );
-            std::this_thread::sleep_for(wait_duration);
+        for(int i=0; i<3; i++){
+            double step_size = step_sizes[i];
+            double steps = stepss[i];
+            RCLCPP_INFO(node->get_logger(),"Calibration for step_size : %f, steps: %f\n",step_size,steps);
+            for(int j = 0; j<4; j++){
+
+                sub_calibration(steps,step_size,movement_durations[j]);
+                RCLCPP_INFO(node->get_logger(),"Movement duration : ",movement_durations[j]);
+            }
+            std::this_thread::sleep_for(10s);
         }
 
-        for(int i=0; i<n; i++){
-            setp.position.z += step_size;
-            auto track_traj = dual_arm_control_interface->execute_waypoints_cubic(
-                std::vector<geometry_msgs::msg::Pose>{setp},std::vector<double>{movement_duration},0.3,0.0,"left"
-            );
-            std::this_thread::sleep_for(wait_duration);
-        }
+
     };
 
     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr step_input_server = 
     node->create_service<std_srvs::srv::Trigger>(
-        "~/step_input",
+        "~/step_input_calibration",
         step_input_callback,
         rmw_qos_profile_services_default,
         mex_cb_group
