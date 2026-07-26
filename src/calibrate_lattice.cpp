@@ -64,7 +64,7 @@ int main(int argc, char** argv){
             for(int j = 0; j<3; j++){
                 
                 sub_calibration(steps,step_size,movement_durations[j]);
-                RCLCPP_INFO(node->get_logger(),"Movement duration : ",movement_durations[j]);
+                RCLCPP_INFO(node->get_logger(),"Movement duration : %f",movement_durations[j]);
                 RCLCPP_INFO(node->get_logger(), "################################################################################################################################");
                 std::this_thread::sleep_for(10s);
             }
