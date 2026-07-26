@@ -52,15 +52,15 @@ void Handover::right_gripper_on(){
     auto client = dual_arm_control_interface_->right_set_io_client_;
 
     set_io_sync(client,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT4,
+                ur_msgs::srv::SetIO::Request::STATE_ON);
+
+    set_io_sync(client,
                 ur_msgs::srv::SetIO::Request::PIN_CONF_OUT5,
                 ur_msgs::srv::SetIO::Request::STATE_ON);
 
     set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT6,
-                ur_msgs::srv::SetIO::Request::STATE_ON);
-
-    set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT7,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT3,
                 ur_msgs::srv::SetIO::Request::STATE_OFF);
 }
 
@@ -68,15 +68,15 @@ void Handover::right_gripper_off(){
     auto client = dual_arm_control_interface_->right_set_io_client_;
 
     set_io_sync(client,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT4,
+                ur_msgs::srv::SetIO::Request::STATE_OFF);
+
+    set_io_sync(client,
                 ur_msgs::srv::SetIO::Request::PIN_CONF_OUT5,
                 ur_msgs::srv::SetIO::Request::STATE_OFF);
 
     set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT6,
-                ur_msgs::srv::SetIO::Request::STATE_OFF);
-
-    set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT7,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT3,
                 ur_msgs::srv::SetIO::Request::STATE_ON);
 }
 
@@ -84,15 +84,15 @@ void Handover::right_gripper_neutral(){
     auto client = dual_arm_control_interface_->right_set_io_client_;
 
     set_io_sync(client,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT4,
+                ur_msgs::srv::SetIO::Request::STATE_OFF);
+
+    set_io_sync(client,
                 ur_msgs::srv::SetIO::Request::PIN_CONF_OUT5,
                 ur_msgs::srv::SetIO::Request::STATE_OFF);
 
     set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT6,
-                ur_msgs::srv::SetIO::Request::STATE_OFF);
-
-    set_io_sync(client,
-                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT7,
+                ur_msgs::srv::SetIO::Request::PIN_CONF_OUT3,
                 ur_msgs::srv::SetIO::Request::STATE_OFF);
 }
 

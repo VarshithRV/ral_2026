@@ -154,12 +154,12 @@ bool Handover::handover()
     // move to right preaction
     dual_arm_control_interface_->move_to_joint_positions(
         std::vector<double>{
-            0.15949875079531686,
-            -1.2477428991054431,
-            -1.9956972244574434,
-            -3.077024939621932,
-            -1.4171686983532517,
-            0.07695608771623892,
+            0.1587774157524109,
+            -1.4757498067668458,
+            -2.4635510444641113,
+            -2.381132741967672,
+            -1.4155743757831019,
+            0.07609853893518448,
         },
         dual_arm_control_interface_->right_move_group_interface_
     );
