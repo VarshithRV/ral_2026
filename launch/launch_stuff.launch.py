@@ -408,6 +408,7 @@ def launch_setup(context, *args, **kwargs):
             {
                 "device_name": "/dev/ttyACM0",
                 "channels": 8,
+                "baud_rate": 115200,
             }
         ],
     )
@@ -420,8 +421,8 @@ def launch_setup(context, *args, **kwargs):
         handover_node_2,
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
-        # serial_float_publisher,
-        calibrate_lattice_node
+        # calibrate_lattice_node
+        serial_float_publisher,
     ]
     
     return nodes_to_start

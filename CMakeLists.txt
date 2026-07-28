@@ -125,7 +125,7 @@ DESTINATION lib/${PROJECT_NAME}
 )
 
 add_executable(float_array_character_device_driver
-src/float_array_character_device_driver.cpp
+src/float_array_character_device_driver_2.cpp
 )
 ament_target_dependencies(float_array_character_device_driver ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_include_directories(float_array_character_device_driver PUBLIC
