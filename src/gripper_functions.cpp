@@ -31,7 +31,7 @@ bool Handover::set_io_sync(
 
     auto future = client->async_send_request(req);
 
-    auto status = future.wait_for(2s);
+    auto status = future.wait_for(5s);
 
     if (status != std::future_status::ready) {
         RCLCPP_ERROR(node_->get_logger(), "SetIO service call timed out");

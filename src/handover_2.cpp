@@ -34,12 +34,12 @@ bool Handover::handover()
     // move to right preaction states
     dual_arm_control_interface_->move_to_joint_positions(
         std::vector<double>{
-            0.15949875079531686,
-            -1.2477428991054431,
-            -1.9956972244574434,
-            -3.077024939621932,
-            -1.4171686983532517,
-            0.07695608771623892,
+            -0.4291909376727503,
+            -1.549779526223876,
+            -2.1257333755493164,
+            -2.6456037960448207,
+            -2.003878895436422,
+            0.054730068892240524,
         },
         dual_arm_control_interface_->right_move_group_interface_
     );
@@ -152,14 +152,26 @@ bool Handover::handover()
     right_gripper_neutral();
 
     // move to right preaction
+    // dual_arm_control_interface_->move_to_joint_positions(
+    //     std::vector<double>{
+    //         0.1587774157524109,
+    //         -1.4757498067668458,
+    //         -2.4635510444641113,
+    //         -2.381132741967672,
+    //         -1.4155743757831019,
+    //         0.07609853893518448,
+    //     },
+    //     dual_arm_control_interface_->right_move_group_interface_
+    // );
+    // move to right preaction states
     dual_arm_control_interface_->move_to_joint_positions(
         std::vector<double>{
-            0.1587774157524109,
-            -1.4757498067668458,
-            -2.4635510444641113,
-            -2.381132741967672,
-            -1.4155743757831019,
-            0.07609853893518448,
+            -0.4291909376727503,
+            -1.549779526223876,
+            -2.1257333755493164,
+            -2.6456037960448207,
+            -2.003878895436422,
+            0.054730068892240524,
         },
         dual_arm_control_interface_->right_move_group_interface_
     );
