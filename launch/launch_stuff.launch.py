@@ -277,8 +277,8 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             {
                 "alpha": 0.9,
-                "marker_separation": 4.7,  # mm
-                "marker_size": 27.84,        # mm
+                "marker_separation": 2.5,  # mm
+                "marker_size": 25.0,        # mm
                 "object.name": "object0",
                 # 2 rows x 2 cols, flattened [row0, row1, ...]
                 "grid.rows": 2,
@@ -399,19 +399,33 @@ def launch_setup(context, *args, **kwargs):
         ],
     )
 
-    serial_float_publisher = Node(
+    serial_float_publisher1 = Node(
         package="ral_2026",
         executable="float_array_character_device_driver",
-        name="float_array_character_device_driver",
+        name="object_linear_encoder",
         output="screen",
         parameters=[
             {
                 "device_name": "/dev/ttyACM0",
-                "channels": 8,
-                "baud_rate": 115200,
+                "channels": 1,
+                "baud_rate": 9600,
             }
         ],
     )
+
+    serial_float_publisher2 = Node(
+            package="ral_2026",
+            executable="float_array_character_device_driver",
+            name="area_sensor",
+            output="screen",
+            parameters=[
+                {
+                    "device_name": "/dev/ttyACM1",
+                    "channels": 8,
+                    "baud_rate": 115200,
+                }
+            ],
+        )
 
     nodes_to_start = [
         left_preaction_server,
@@ -422,7 +436,8 @@ def launch_setup(context, *args, **kwargs):
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
         # calibrate_lattice_node
-        serial_float_publisher,
+        serial_float_publisher1,
+        serial_float_publisher2,
     ]
     
     return nodes_to_start
