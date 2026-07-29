@@ -111,7 +111,7 @@ bool Handover::handover()
                 geometry_msgs::msg::Pose place_pose;
                 place_pose.position.x = 0.386;
                 place_pose.position.y = -0.029;
-                place_pose.position.z = 0.076;
+                place_pose.position.z = 0.10;
                 place_pose.orientation.x = 0.720;
                 place_pose.orientation.y = -0.024;
                 place_pose.orientation.z = 0.027;
