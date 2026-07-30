@@ -22,7 +22,7 @@ def launch_setup(context, *args, **kwargs):
         output="screen",
         parameters=[
             {
-                "device_name": "/dev/ttyACM2",
+                "device_name": "/dev/ttyACM0",
                 "channels": 1,
                 "baud_rate": 9600,
             }
