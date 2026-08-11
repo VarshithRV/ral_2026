@@ -5,6 +5,7 @@ import threading
 import json
 import math
 import nidaqmx
+import nidaqmx.constants
 import numpy as np
 
 class Server:
@@ -14,10 +15,10 @@ class Server:
         print("Socket initialized")
         self.port = 9999
         print("Binding socket")
-        self.s.bind(('192.168.1.6',self.port))
+        self.s.bind(('192.168.1.4',self.port))
         print(f"Socket bound to port {self.port}")
         print("Listening for connections now")
-        self.s.listen(5)
+        self.s.listen(5) 
 
         self.task = nidaqmx.Task()
         self.task.ai_channels.add_ai_voltage_chan("Dev1/ai0")
@@ -26,6 +27,7 @@ class Server:
         self.task.ai_channels.add_ai_voltage_chan("Dev1/ai3")
         self.task.ai_channels.add_ai_voltage_chan("Dev1/ai4")
         self.task.ai_channels.add_ai_voltage_chan("Dev1/ai5")
+        self.task.timing.cfg_samp_clk_timing(1000,samps_per_chan=50)
 
         self.cal_matrix = np.array([
             [ 0.006508136168,  0.004737349693, -0.039684981108, -1.643620133400,  0.018618559465,   1.690829515457],
@@ -36,7 +38,7 @@ class Server:
             [-0.037593655288,  7.526563644409,  0.112936601043,  7.675779342651,  0.109928734601,   7.442779064178]
         ], dtype=np.float64)
 
-        self.bias = np.dot(self.cal_matrix,np.array(self.task.read()))
+        self.bias = np.dot(self.cal_matrix,np.array(self.task.read(nidaqmx.constants.READ_ALL_AVAILABLE))) # 6x50 matrix
         pass
 
     def keep_waiting_for_connection(self):
@@ -48,16 +50,14 @@ class Server:
                 print(f"Got connection from {self.addr}")
 
                 while True:
-                        # try:
-                        data = self.read_ft_value()
-                        data.insert(0,time.time())
-                        stream = json.dumps(data)
-                        stream += "\n"
-                        self.c.send(stream.encode())
-                        # except BrokenPipeError or ConnectionAbortedError:
-                        #     print("Client Socket appears closed")
-                        #     print(f"Client socket fd : {self.c.fileno()}")
-                        #     break
+                        start_time = time.time()
+                        data = self.read_ft_value() # double 6x50, the first list contains 50 values
+                        for i in range(50):
+                            ft_i = [data[0][i],data[1][i],data[2][i],data[3][i],data[4][i],data[5][i]]
+                            ft_i.insert(0,start_time + 0.01 + i*0.001)
+                            stream = json.dumps(ft_i)
+                            stream += "\n"
+                            self.c.send(stream.encode()) 
             except KeyboardInterrupt:
 
                 print("Interrupted, exit")
@@ -67,9 +67,9 @@ class Server:
 
     # replace function to read the ft data
     def read_ft_value(self):
-        input_voltages = self.task.read()
+        input_voltages = self.task.read(nidaqmx.constants.READ_ALL_AVAILABLE)
         signal_vector = np.array(input_voltages,dtype=float)
-        ft_data=np.dot(self.cal_matrix,signal_vector)
+        ft_data=np.dot(self.cal_matrix,signal_vector) # 6x50
         ft_data -= self.bias
         return ft_data.tolist()
 
