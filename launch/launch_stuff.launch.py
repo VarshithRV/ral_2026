@@ -435,7 +435,7 @@ def launch_setup(context, *args, **kwargs):
         handover_node_2,
         left_task_space_cubic_polynomial_trajectory_server,
         right_task_space_cubic_polynomial_trajectory_server,
-        # calibrate_lattice_node
+        calibrate_lattice_node
         # serial_float_publisher1,
         # serial_float_publisher2,
     ]
