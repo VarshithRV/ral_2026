@@ -10,7 +10,7 @@ from std_msgs.msg import Float64MultiArray
 
 
 class Client(Node):
-    SERVER_IP = "192.168.1.7"
+    SERVER_IP = "192.168.1.4"
     SERVER_PORT = 9999
 
     LOCAL_IP = "192.168.1.5"

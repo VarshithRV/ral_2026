@@ -34,9 +34,9 @@ int main(int argc, char** argv){
         auto start_pose = *(dual_arm_control_interface->get_current_ee_pose("left"));
         
         std::vector<double> step_sizes{0.001,0.0015,0.003};
-        std::vector<double> movement_durations{0.5,0.6,0.7};
-        std::vector<int> stepss{9,6,3};
-        auto wait_duration = 3s;
+        std::vector<double> movement_durations{0.5,1.0,1.5};
+        std::vector<int> stepss{3,3,3};
+        auto wait_duration = 10s;
 
         auto sub_calibration = [wait_duration,dual_arm_control_interface,start_pose](int steps, double step_size, double movement_duration ){
             geometry_msgs::msg::Pose setp(start_pose);
