@@ -36,7 +36,7 @@ int main(int argc, char** argv){
         std::vector<double> step_sizes{0.001,0.0015,0.003};
         std::vector<double> movement_durations{0.5,1.0,1.5};
         std::vector<int> stepss{3,3,3};
-        auto wait_duration = 10s;
+        auto wait_duration = 35s;
 
         auto sub_calibration = [wait_duration,dual_arm_control_interface,start_pose](int steps, double step_size, double movement_duration ){
             geometry_msgs::msg::Pose setp(start_pose);
@@ -66,7 +66,8 @@ int main(int argc, char** argv){
                 sub_calibration(steps,step_size,movement_durations[j]);
                 RCLCPP_INFO(node->get_logger(),"Movement duration : %f",movement_durations[j]);
                 RCLCPP_INFO(node->get_logger(), "################################################################################################################################");
-                std::this_thread::sleep_for(10s);
+                if(j<2)
+                    std::this_thread::sleep_for(10s);
             }
             std::this_thread::sleep_for(0.5s);
             RCLCPP_INFO(node->get_logger(), "################################################################################################################################");
