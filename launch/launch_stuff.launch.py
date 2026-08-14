@@ -414,18 +414,18 @@ def launch_setup(context, *args, **kwargs):
     )
 
     serial_float_publisher2 = Node(
-            package="ral_2026",
-            executable="float_array_character_device_driver",
-            name="area_sensor",
-            output="screen",
-            parameters=[
-                {
-                    "device_name": "/dev/ttyACM1",
-                    "channels": 8,
-                    "baud_rate": 115200,
-                }
-            ],
-        )
+        package="ral_2026",
+        executable="float_array_character_device_driver",
+        name="area_sensor",
+        output="screen",
+        parameters=[
+            {
+                "device_name": "/dev/ttyACM1",
+                "channels": 8,
+                "baud_rate": 115200,
+            }
+        ],
+    )
 
     nodes_to_start = [
         left_preaction_server,
