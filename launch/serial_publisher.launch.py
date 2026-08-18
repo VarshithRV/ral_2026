@@ -23,7 +23,7 @@ def launch_setup(context, *args, **kwargs):
         parameters=[
             {
                 "device_name": "/dev/ttyACM0",
-                "channels": 1,
+                "channels": 2,
                 "baud_rate": 9600,
             }
         ],
@@ -36,7 +36,7 @@ def launch_setup(context, *args, **kwargs):
             output="screen",
             parameters=[
                 {
-                    "device_name": "/dev/ttyACM1",
+                    "device_name": "/dev/ttyACM0",
                     "channels": 8,
                     "baud_rate": 115200,
                 }
@@ -45,7 +45,7 @@ def launch_setup(context, *args, **kwargs):
 
     nodes_to_start = [
         serial_float_publisher1,
-        serial_float_publisher2,
+        # serial_float_publisher2,
     ]
     
     return nodes_to_start
