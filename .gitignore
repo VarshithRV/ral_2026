@@ -3,4 +3,5 @@ log/
 launch/__pycache__/
 build/
 *.db3
+*.mat
 
