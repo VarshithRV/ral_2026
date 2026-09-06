@@ -15,7 +15,7 @@ class Server:
         print("Socket initialized")
         self.port = 9999
         print("Binding socket")
-        self.s.bind(('192.168.1.4',self.port))
+        self.s.bind(('192.168.1.6',self.port))
         print(f"Socket bound to port {self.port}")
         print("Listening for connections now")
         self.s.listen(5) 
