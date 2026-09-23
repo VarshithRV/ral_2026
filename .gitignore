@@ -2,6 +2,12 @@
 log/
 launch/__pycache__/
 build/
+scripts/lib/
+scripts/lib64
+scripts/bin/
+pyvenv.cfg
+
 *.db3
 *.mat
-
+*.mp4
+*.png
